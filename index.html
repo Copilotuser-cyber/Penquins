@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antarctic Penguin AI Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script type="module" src="script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>🐧 PenguinAI</h2>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#species" class="nav-link">Species</a>
+                <a href="#habitat" class="nav-link">Habitat</a>
+                <a href="#conservation" class="nav-link">Conservation</a>
+                <div class="auth-section" id="authSection">
+                    <button class="btn-login" id="loginBtn" style="display: none;">Login</button>
+                    <div class="user-info" id="userInfo" style="display: none;">
+                        <span class="username" id="usernameDisplay"></span>
+                        <button class="btn-logout" id="logoutBtn">Logout</button>
+                    </div>
+                </div>
+                <button class="btn-upgrade" id="upgradeBtn" style="display: none;">Upgrade</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>Discover the World of Penguins</h1>
+                <p>Explore fascinating facts about these amazing flightless birds and chat with our AI assistant</p>
+                <button class="btn-primary" id="exploreBtn">Start Exploring</button>
+            </div>
+        </section>
+
+        <!-- Penguin Species Section -->
+        <section id="species" class="section">
+            <h2>Penguin Species</h2>
+            <div class="species-grid">
+                <div class="species-card">
+                    <img src="https://images.unsplash.com/photo-1564349683139-0a6c269e35e8?w=400" alt="Emperor Penguin">
+                    <h3>Emperor Penguin</h3>
+                    <p>The largest penguin species, standing up to 4 feet tall and weighing up to 100 pounds.</p>
+                </div>
+                <div class="species-card">
+                    <img src="https://images.unsplash.com/photo-1551087261-7bda8d4d53bf?w=400" alt="Adélie Penguin">
+                    <h3>Adélie Penguin</h3>
+                    <p>Known for their tuxedo-like appearance and feisty personality.</p>
+                </div>
+                <div class="species-card">
+                    <img src="https://images.unsplash.com/photo-1584550890386-2e3093166e6f?w=400" alt="Gentoo Penguin">
+                    <h3>Gentoo Penguin</h3>
+                    <p>Recognizable by their bright orange-red bills and white eye patches.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Habitat Section -->
+        <section id="habitat" class="section section-dark">
+            <h2>Penguin Habitats</h2>
+            <div class="habitat-content">
+                <div class="habitat-text">
+                    <p>Penguins are primarily found in the Southern Hemisphere, with the highest concentration in Antarctica. However, some species inhabit temperate regions, and the Galapagos Penguin lives near the equator.</p>
+                    <ul>
+                        <li>Antarctica and Subantarctic Islands</li>
+                        <li>South America (Chile, Argentina, Peru)</li>
+                        <li>Africa (South Africa, Namibia)</li>
+                        <li>Australia and New Zealand</li>
+                        <li>Galapagos Islands</li>
+                    </ul>
+                </div>
+                <div class="habitat-image">
+                    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500" alt="Penguin Habitat">
+                </div>
+            </div>
+        </section>
+
+        <!-- Chatbot Section (Hidden by default) -->
+        <section id="chatbotSection" class="section" style="display: none;">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h3>Penguin AI Assistant</h3>
+                    <div class="model-indicator">
+                        <span id="modelStatus">Using: Standard Model</span>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <div class="message-content">
+                            <p>Hello! I'm your Penguin AI assistant. How can I help you today?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="userInput" placeholder="Ask me anything about penguins...">
+                    <button id="sendBtn">Send</button>
+                </div>
+                <div class="chat-actions">
+                    <button id="saveChatBtn" class="btn-secondary">Save Chat</button>
+                    <button id="clearChatBtn" class="btn-secondary">Clear Chat</button>
+                    <button id="viewHistoryBtn" class="btn-secondary">View History</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Dashboard (Hidden by default) -->
+        <section id="adminSection" class="section" style="display: none;">
+            <div class="admin-container">
+                <h2>Admin Dashboard</h2>
+                <div class="admin-controls">
+                    <div class="control-group">
+                        <h3>User Management</h3>
+                        <input type="email" id="upgradeEmail" placeholder="Enter user email to upgrade">
+                        <button id="grantPremiumBtn" class="btn-primary">Grant Premium</button>
+                    </div>
+                    <div class="control-group">
+                        <h3>System Statistics</h3>
+                        <div id="systemStats">
+                            <p>Total Users: <span id="totalUsers">0</span></p>
+                            <p>Premium Users: <span id="premiumUsers">0</span></p>
+                            <p>Total Chats: <span id="totalChats">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>PenguinAI</h4>
+                <p>Your gateway to the world of penguins and AI technology.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="#home">Home</a>
+                <a href="#species">Species</a>
+                <a href="#habitat">Habitat</a>
+                <button id="creditsBtn" class="btn-footer">Credits</button>
+            </div>
+            <div class="footer-section">
+                <div id="creditsModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h3>Access Credits</h3>
+                        <p>Enter the secret code to access the AI chatbot:</p>
+                        <input type="text" id="secretCodeInput" placeholder="Enter secret code">
+                        <button id="submitCodeBtn" class="btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 PenguinAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Chat History Modal -->
+    <div id="historyModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Your Chat History</h3>
+            <div id="savedChatsList"></div>
+        </div>
+    </div>
+</body>
+</html>
