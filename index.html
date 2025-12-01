@@ -223,7 +223,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.08" d="M0,64L48,80C96,96,192,128,288,122.7C384,117,480,75,576,64C672,53,768,75,864,106.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.08" d="M0,64L48,80C96,96,192,128,288,122.7C384,117,480,75,576,64C672,53,768,75,864,106.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
             background-size: cover;
             background-position: bottom;
             z-index: 1;
@@ -913,11 +913,15 @@
             width: 100%;
             max-width: 400px;
             margin: 0 auto;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         
-        .firebaseui-container {
-            margin: 0 auto;
-            max-width: 100%;
+        #firebaseui-auth-container {
+            width: 100%;
         }
         
         .modal-input {
@@ -1291,6 +1295,87 @@
             cursor: pointer;
             font-weight: bold;
         }
+        
+        /* Fallback auth styles */
+        .fallback-auth {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .auth-option {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        [data-theme="dark"] .auth-option {
+            background: #334155;
+            border-color: #475569;
+        }
+        
+        .auth-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .google-icon {
+            width: 24px;
+            height: 24px;
+            background: #db4437;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .email-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        
+        .divider span {
+            padding: 0 10px;
+            color: #64748b;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -1579,18 +1664,84 @@
         <div class="modal-content">
             <span class="close-modal" id="close-login-modal">&times;</span>
             <h2><i class="fas fa-sign-in-alt"></i> Login to Your Account</h2>
-            <p>Enter your credentials to access AI chat features and save your chat history</p>
+            <p>Choose your preferred login method to access AI chat features</p>
             
             <div class="modal-form">
-                <div class="auth-container">
-                    <div id="firebaseui-auth-container"></div>
-                    <div id="firebaseui-auth-spinner" class="loading-container" style="display: none;">
-                        <div class="loading"></div>
+                <div class="auth-container" id="auth-container">
+                    <div class="fallback-auth">
+                        <div class="error-message" id="auth-error" style="display: none;">
+                            <i class="fas fa-exclamation-circle"></i> <span id="auth-error-message">Authentication error</span>
+                        </div>
+                        
+                        <div class="auth-option" id="google-login">
+                            <div class="google-icon">
+                                <i class="fab fa-google"></i>
+                            </div>
+                            <span>Continue with Google</span>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>or</span>
+                        </div>
+                        
+                        <div class="auth-option" id="email-login">
+                            <div class="email-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <span>Continue with Email</span>
+                        </div>
+                    </div>
+                    
+                    <div id="email-form" style="display: none; width: 100%; max-width: 400px; margin: 0 auto;">
+                        <input type="email" class="modal-input" id="login-email" placeholder="Your email address">
+                        <input type="password" class="modal-input" id="login-password" placeholder="Your password">
+                        <div style="text-align: left; margin: 1rem 0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="remember-me" style="width: 18px; height: 18px;">
+                                <span>Remember me</span>
+                            </label>
+                        </div>
+                        <div class="modal-btns">
+                            <button class="btn btn-outline" id="back-to-login-options">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </button>
+                            <button class="btn" id="submit-login">
+                                <span id="login-spinner" style="display: none;" class="loading"></span>
+                                Login
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="signup-form" style="display: none; width: 100%; max-width: 400px; margin: 0 auto;">
+                        <input type="text" class="modal-input" id="signup-username" placeholder="Choose a username">
+                        <input type="email" class="modal-input" id="signup-email" placeholder="Your email address">
+                        <input type="password" class="modal-input" id="signup-password" placeholder="Create a password">
+                        <input type="password" class="modal-input" id="signup-confirm" placeholder="Confirm password">
+                        <div style="text-align: left; margin: 1rem 0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="terms-agree" style="width: 18px; height: 18px;" required>
+                                <span>I agree to the <a href="#" style="color: var(--gold);">Terms of Service</a> and <a href="#" style="color: var(--gold);">Privacy Policy</a></span>
+                            </label>
+                        </div>
+                        <div class="modal-btns">
+                            <button class="btn btn-outline" id="back-to-auth-options">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </button>
+                            <button class="btn btn-secondary" id="submit-signup">
+                                <span id="signup-spinner" style="display: none;" class="loading"></span>
+                                Create Account
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
                 <div style="margin-top: 1.5rem; text-align: center;">
-                    <p>Don't have an account? <a href="#" id="switch-to-signup" style="color: var(--gold); font-weight: 600; text-decoration: none;">Sign up here</a></p>
+                    <p>Don't have an account? <a href="#" id="switch-to-signup-link" style="color: var(--gold); font-weight: 600; text-decoration: none;">Sign up here</a></p>
+                    <p style="margin-top: 0.5rem;">
+                        <a href="#" id="forgot-password" style="color: #94a3b8; text-decoration: none; font-size: 0.95rem;">
+                            <i class="fas fa-question-circle"></i> Forgot password?
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
@@ -1603,28 +1754,32 @@
             <p>Join our community to save chats and access exclusive features</p>
             
             <div class="modal-form">
-                <input type="text" class="modal-input" id="signup-username" placeholder="Choose a username">
-                <input type="email" class="modal-input" id="signup-email" placeholder="Your email address">
-                <input type="password" class="modal-input" id="signup-password" placeholder="Create a password">
-                <input type="password" class="modal-input" id="signup-confirm" placeholder="Confirm password">
-                
-                <div style="text-align: left; margin: 1rem 0;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="terms-agree" style="width: 18px; height: 18px;" required>
-                        <span>I agree to the <a href="#" style="color: var(--gold);">Terms of Service</a> and <a href="#" style="color: var(--gold);">Privacy Policy</a></span>
-                    </label>
-                </div>
-                
-                <div class="modal-btns">
-                    <button class="btn btn-outline" id="cancel-signup">Cancel</button>
-                    <button class="btn btn-secondary" id="submit-signup">
-                        <span id="signup-spinner" style="display: none;" class="loading"></span>
-                        Create Account
-                    </button>
-                </div>
-                
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <p>Already have an account? <a href="#" id="switch-to-login" style="color: var(--gold); font-weight: 600; text-decoration: none;">Login here</a></p>
+                <div class="auth-container">
+                    <div id="signup-form-container">
+                        <input type="text" class="modal-input" id="signup-username-modal" placeholder="Choose a username">
+                        <input type="email" class="modal-input" id="signup-email-modal" placeholder="Your email address">
+                        <input type="password" class="modal-input" id="signup-password-modal" placeholder="Create a password">
+                        <input type="password" class="modal-input" id="signup-confirm-modal" placeholder="Confirm password">
+                        
+                        <div style="text-align: left; margin: 1rem 0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="terms-agree-modal" style="width: 18px; height: 18px;" required>
+                                <span>I agree to the <a href="#" style="color: var(--gold);">Terms of Service</a> and <a href="#" style="color: var(--gold);">Privacy Policy</a></span>
+                            </label>
+                        </div>
+                        
+                        <div class="modal-btns">
+                            <button class="btn btn-outline" id="cancel-signup-modal">Cancel</button>
+                            <button class="btn btn-secondary" id="submit-signup-modal">
+                                <span id="signup-spinner-modal" style="display: none;" class="loading"></span>
+                                Create Account
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem; text-align: center;">
+                            <p>Already have an account? <a href="#" id="switch-to-login-link" style="color: var(--gold); font-weight: 600; text-decoration: none;">Login here</a></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1691,10 +1846,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
-    <!-- FirebaseUI for Auth -->
-    <script src="https://cdn.jsdelivr.net/npm/firebaseui@6.1.0/dist/firebaseui.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firebaseui@6.1.0/dist/firebaseui.css" />
-    
     <script>
         // Firebase Configuration - REPLACE WITH YOUR ACTUAL CONFIG
         const firebaseConfig = {
@@ -1709,36 +1860,29 @@
         
         // Initialize Firebase
         let app, auth, db;
-        let firebaseUi = null;
         
         try {
-            // Initialize Firebase only once
-            if (!firebase.apps.length) {
-                app = firebase.initializeApp(firebaseConfig);
-                auth = firebase.auth();
-                db = firebase.firestore();
-                
-                console.log("Firebase initialized successfully");
-                
-                // Firebase settings
-                db.settings({ ignoreUndefinedProperties: true });
-                
-                // Offline persistence
-                db.enablePersistence()
-                    .catch((err) => {
-                        console.error("Persistence error:", err);
-                        if (err.code === 'failed-precondition') {
-                            console.log("Multiple tabs open, persistence can only be enabled in one tab at a time.");
-                        } else if (err.code === 'unimplemented') {
-                            console.log("Browser doesn't support persistence.");
-                        }
-                    });
-            } else {
-                app = firebase.app();
-                auth = firebase.auth();
-                db = firebase.firestore();
-            }
+            // Initialize Firebase
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
             
+            console.log("Firebase initialized successfully");
+            
+            // Firebase settings
+            db.settings({ ignoreUndefinedProperties: true });
+            
+            // Offline persistence
+            db.enablePersistence()
+                .catch((err) => {
+                    console.error("Persistence error:", err);
+                    if (err.code === 'failed-precondition') {
+                        console.log("Multiple tabs open, persistence can only be enabled in one tab at a time.");
+                    } else if (err.code === 'unimplemented') {
+                        console.log("Browser doesn't support persistence.");
+                    }
+                });
+                
             // Setup network monitoring
             window.addEventListener('online', updateNetworkStatus);
             window.addEventListener('offline', updateNetworkStatus);
@@ -1767,16 +1911,32 @@
         const loginModal = document.getElementById('login-modal');
         const signupModal = document.getElementById('signup-modal');
         const upgradeModal = document.getElementById('upgrade-modal');
+        const googleLogin = document.getElementById('google-login');
+        const emailLogin = document.getElementById('email-login');
+        const submitLogin = document.getElementById('submit-login');
         const submitSignup = document.getElementById('submit-signup');
+        const submitSignupModal = document.getElementById('submit-signup-modal');
         const confirmUpgrade = document.getElementById('confirm-upgrade');
-        const cancelSignup = document.getElementById('cancel-signup');
+        const backToLoginOptions = document.getElementById('back-to-login-options');
+        const backToAuthOptions = document.getElementById('back-to-auth-options');
+        const switchToSignupLink = document.getElementById('switch-to-signup-link');
+        const switchToLoginLink = document.getElementById('switch-to-login-link');
+        const cancelSignupModal = document.getElementById('cancel-signup-modal');
         const cancelUpgrade = document.getElementById('cancel-upgrade');
-        const switchToSignup = document.getElementById('switch-to-signup');
-        const switchToLogin = document.getElementById('switch-to-login');
+        const loginEmail = document.getElementById('login-email');
+        const loginPassword = document.getElementById('login-password');
         const signupUsername = document.getElementById('signup-username');
         const signupEmail = document.getElementById('signup-email');
         const signupPassword = document.getElementById('signup-password');
         const signupConfirm = document.getElementById('signup-confirm');
+        const signupUsernameModal = document.getElementById('signup-username-modal');
+        const signupEmailModal = document.getElementById('signup-email-modal');
+        const signupPasswordModal = document.getElementById('signup-password-modal');
+        const signupConfirmModal = document.getElementById('signup-confirm-modal');
+        const termsAgree = document.getElementById('terms-agree');
+        const termsAgreeModal = document.getElementById('terms-agree-modal');
+        const authError = document.getElementById('auth-error');
+        const authErrorMessage = document.getElementById('auth-error-message');
         const chatContainer = document.getElementById('chat-container');
         const chatUserInitial = document.getElementById('chat-user-initial');
         const chatUsername = document.getElementById('chat-username');
@@ -1799,6 +1959,9 @@
         const toastMessage = document.getElementById('toast-message');
         const toastClose = document.getElementById('toast-close');
         const networkStatus = document.getElementById('network-status');
+        const emailForm = document.getElementById('email-form');
+        const signupForm = document.getElementById('signup-form');
+        const signupFormContainer = document.getElementById('signup-form-container');
 
         // State variables
         let isLoggedIn = false;
@@ -1941,7 +2104,6 @@
             });
             creditsLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                // In this version, the credits link doesn't do anything special
                 showToast("Special access features coming soon!", "info");
             });
             
@@ -1949,21 +2111,48 @@
             closeLoginModal.addEventListener('click', () => hideModal(loginModal));
             closeSignupModal.addEventListener('click', () => hideModal(signupModal));
             closeUpgradeModal.addEventListener('click', () => hideModal(upgradeModal));
-            cancelSignup.addEventListener('click', () => hideModal(signupModal));
+            cancelSignupModal.addEventListener('click', () => hideModal(signupModal));
             cancelUpgrade.addEventListener('click', () => hideModal(upgradeModal));
             
-            // Modal switching
-            switchToSignup.addEventListener('click', () => {
-                hideModal(loginModal);
-                showModal(signupModal);
+            // Login method selection
+            googleLogin.addEventListener('click', handleGoogleLogin);
+            emailLogin.addEventListener('click', () => {
+                emailForm.style.display = 'block';
+                document.querySelector('.fallback-auth').style.display = 'none';
             });
-            switchToLogin.addEventListener('click', () => {
+            
+            // Back buttons
+            backToLoginOptions.addEventListener('click', () => {
+                emailForm.style.display = 'none';
+                document.querySelector('.fallback-auth').style.display = 'block';
+                authError.style.display = 'none';
+            });
+            
+            backToAuthOptions.addEventListener('click', () => {
+                signupForm.style.display = 'none';
+                document.querySelector('.fallback-auth').style.display = 'block';
+                authError.style.display = 'none';
+            });
+            
+            // Switch between login and signup
+            switchToSignupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                emailForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                document.querySelector('.fallback-auth').style.display = 'none';
+                authError.style.display = 'none';
+            });
+            
+            switchToLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
                 hideModal(signupModal);
                 showModal(loginModal);
             });
             
             // Form submissions
-            submitSignup.addEventListener('click', handleSignupSubmit);
+            submitLogin.addEventListener('click', handleEmailLogin);
+            submitSignup.addEventListener('click', handleEmailSignup);
+            submitSignupModal.addEventListener('click', handleModalSignup);
             confirmUpgrade.addEventListener('click', handleUpgradeConfirm);
             
             // User menu
@@ -2027,19 +2216,101 @@
         }
 
         // Authentication functions
-        function handleSignupSubmit() {
+        function handleGoogleLogin() {
+            showLoading(true);
+            authError.style.display = 'none';
+            
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            auth.signInWithPopup(provider)
+                .then(async (result) => {
+                    // This gives you a Google Access Token
+                    const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+                    const token = credential.accessToken;
+                    const user = result.user;
+                    
+                    // Check if user exists in Firestore
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    
+                    if (!userDoc.exists) {
+                        // Create new user document
+                        await db.collection('users').doc(user.uid).set({
+                            username: user.displayName || user.email.split('@')[0],
+                            email: user.email,
+                            isPremium: false,
+                            dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                            avatarUrl: user.photoURL || null
+                        });
+                    } else {
+                        // Update last login
+                        await db.collection('users').doc(user.uid).update({
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                    
+                    hideModal(loginModal);
+                    showLoading(false);
+                })
+                .catch((error) => {
+                    console.error("Google login error:", error);
+                    handleAuthError(error);
+                    showLoading(false);
+                });
+        }
+        
+        function handleEmailLogin() {
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+            
+            if (!email || !password) {
+                showToast('Please enter both email and password', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            authError.style.display = 'none';
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(async (userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Get user document
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    
+                    if (userDoc.exists) {
+                        // Update last login
+                        await db.collection('users').doc(user.uid).update({
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                    
+                    hideModal(loginModal);
+                    emailForm.style.display = 'none';
+                    document.querySelector('.fallback-auth').style.display = 'block';
+                    loginEmail.value = '';
+                    loginPassword.value = '';
+                    showLoading(false);
+                })
+                .catch((error) => {
+                    console.error("Email login error:", error);
+                    handleAuthError(error);
+                    showLoading(false);
+                });
+        }
+        
+        function handleEmailSignup() {
             const username = signupUsername.value.trim();
             const email = signupEmail.value.trim();
             const password = signupPassword.value.trim();
             const confirm = signupConfirm.value.trim();
-            const termsAgreed = document.getElementById('terms-agree').checked;
             
             if (!username || !email || !password || !confirm) {
                 showToast('Please fill all fields', 'error');
                 return;
             }
             
-            if (!termsAgreed) {
+            if (!termsAgree.checked) {
                 showToast('You must agree to the Terms of Service and Privacy Policy', 'error');
                 return;
             }
@@ -2054,11 +2325,9 @@
                 return;
             }
             
-            // Show loading spinner
-            document.getElementById('signup-spinner').style.display = 'inline-block';
-            submitSignup.disabled = true;
+            showLoading(true);
+            authError.style.display = 'none';
             
-            // Create user with email/password
             auth.createUserWithEmailAndPassword(email, password)
                 .then(async (userCredential) => {
                     const user = userCredential.user;
@@ -2075,39 +2344,135 @@
                     // Send email verification
                     await user.sendEmailVerification();
                     
-                    // Hide modal and reset form
-                    hideModal(signupModal);
+                    // Hide forms and show success message
+                    signupForm.style.display = 'none';
+                    document.querySelector('.fallback-auth').style.display = 'block';
+                    showToast('Account created successfully! Please check your email for verification.', 'success');
+                    showLoading(false);
+                    
+                    // Clear form
                     signupUsername.value = '';
                     signupEmail.value = '';
                     signupPassword.value = '';
                     signupConfirm.value = '';
-                    document.getElementById('signup-spinner').style.display = 'none';
-                    submitSignup.disabled = false;
-                    
-                    showToast('Account created successfully! Please check your email for verification.', 'success');
+                    termsAgree.checked = false;
                 })
                 .catch((error) => {
-                    console.error("Signup error:", error);
-                    let errorMessage = 'Failed to create account. ';
-                    
-                    switch (error.code) {
-                        case 'auth/email-already-in-use':
-                            errorMessage += 'This email is already registered.';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage += 'Invalid email format.';
-                            break;
-                        case 'auth/weak-password':
-                            errorMessage += 'Password is too weak.';
-                            break;
-                        default:
-                            errorMessage += 'Please try again later.';
-                    }
-                    
-                    showToast(errorMessage, 'error');
-                    document.getElementById('signup-spinner').style.display = 'none';
-                    submitSignup.disabled = false;
+                    console.error("Email signup error:", error);
+                    handleAuthError(error);
+                    showLoading(false);
                 });
+        }
+        
+        function handleModalSignup() {
+            const username = signupUsernameModal.value.trim();
+            const email = signupEmailModal.value.trim();
+            const password = signupPasswordModal.value.trim();
+            const confirm = signupConfirmModal.value.trim();
+            
+            if (!username || !email || !password || !confirm) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+            
+            if (!termsAgreeModal.checked) {
+                showToast('You must agree to the Terms of Service and Privacy Policy', 'error');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(async (userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Create user document in Firestore
+                    await db.collection('users').doc(user.uid).set({
+                        username: username,
+                        email: email,
+                        isPremium: false,
+                        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Send email verification
+                    await user.sendEmailVerification();
+                    
+                    // Hide modal
+                    hideModal(signupModal);
+                    showToast('Account created successfully! Please check your email for verification.', 'success');
+                    showLoading(false);
+                    
+                    // Clear form
+                    signupUsernameModal.value = '';
+                    signupEmailModal.value = '';
+                    signupPasswordModal.value = '';
+                    signupConfirmModal.value = '';
+                    termsAgreeModal.checked = false;
+                })
+                .catch((error) => {
+                    console.error("Modal signup error:", error);
+                    handleAuthError(error);
+                    showLoading(false);
+                });
+        }
+        
+        function handleAuthError(error) {
+            let message = 'Authentication failed. ';
+            
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    message += 'This email is already registered.';
+                    break;
+                case 'auth/invalid-email':
+                    message += 'Invalid email format.';
+                    break;
+                case 'auth/weak-password':
+                    message += 'Password is too weak.';
+                    break;
+                case 'auth/user-not-found':
+                    message += 'No user found with this email.';
+                    break;
+                case 'auth/wrong-password':
+                    message += 'Incorrect password.';
+                    break;
+                case 'auth/popup-closed-by-user':
+                    message = 'Login cancelled by user.';
+                    break;
+                case 'auth/network-request-failed':
+                    message = 'Network error. Please check your connection.';
+                    break;
+                default:
+                    message += 'Please try again later.';
+            }
+            
+            authErrorMessage.textContent = message;
+            authError.style.display = 'block';
+            showToast(message, 'error');
+        }
+        
+        function showLoading(show) {
+            if (show) {
+                document.body.style.cursor = 'wait';
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.disabled = true;
+                });
+            } else {
+                document.body.style.cursor = 'default';
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.disabled = false;
+                });
+            }
         }
 
         function handleLogout() {
@@ -2444,11 +2809,6 @@
                 modal.classList.add('show');
             }, 10);
             document.body.style.overflow = 'hidden';
-            
-            // Initialize FirebaseUI for login modal
-            if (modal === loginModal && !firebaseUi) {
-                initFirebaseUI();
-            }
         }
 
         function hideModal(modal) {
@@ -2456,11 +2816,6 @@
             setTimeout(() => {
                 modal.style.display = 'none';
                 document.body.style.overflow = 'auto';
-                
-                // Reset FirebaseUI container
-                if (modal === loginModal) {
-                    document.getElementById('firebaseui-auth-container').innerHTML = '';
-                }
             }, 300);
         }
 
@@ -2496,36 +2851,6 @@
                         });
                 });
             }
-        }
-
-        function initFirebaseUI() {
-            // FirebaseUI config
-            const uiConfig = {
-                signInSuccessUrl: '#',
-                signInOptions: [
-                    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-                    {
-                        provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-                        requireDisplayName: false
-                    }
-                ],
-                tosUrl: '#terms',
-                privacyPolicyUrl: '#privacy',
-                callbacks: {
-                    signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-                        // Handle successful sign-in
-                        return false; // Prevent redirect
-                    },
-                    uiShown: function() {
-                        // Hide the spinner
-                        document.getElementById('firebaseui-auth-spinner').style.display = 'none';
-                    }
-                }
-            };
-            
-            // Initialize the FirebaseUI Widget
-            firebaseUi = new firebaseui.auth.AuthUI(auth);
-            firebaseUi.start('#firebaseui-auth-container', uiConfig);
         }
 
         // Initialize the app when DOM is loaded
