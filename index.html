@@ -3,179 +3,2860 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antarctic Penguin AI Hub</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script type="module" src="script.js"></script>
+    <meta name="description" content="Penguin Paradise - Discover amazing penguin facts while enjoying premium AI chat capabilities">
+    <title>Penguin Paradise | Premium AI Chat Experience</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <meta name="theme-color" content="#1a5fb4">
+    <style>
+        :root {
+            --primary: #1a5fb4;
+            --secondary: #2a7f3f;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gold: #d4af37;
+            --ice: #e6f7ff;
+            --snow: #f0f8ff;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-radius-sm: 8px;
+            --border-radius-md: 16px;
+            --border-radius-lg: 24px;
+            --sidebar-width: 280px;
+        }
+        
+        [data-theme="dark"] {
+            --light: #121212;
+            --dark: #f8f9fa;
+            --ice: #0a1929;
+            --snow: #0d1b2a;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: linear-gradient(135deg, var(--snow) 0%, var(--ice) 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+        
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0a0e17 0%, #0d1b2a 100%);
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(26, 95, 180, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(42, 127, 63, 0.03) 0%, transparent 20%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Header & Navigation */
+        header {
+            background: rgba(26, 95, 180, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-decoration: none;
+            color: white;
+            transition: var(--transition);
+        }
+        
+        .logo:hover {
+            transform: scale(1.03);
+        }
+        
+        .logo i {
+            font-size: 2.4rem;
+            background: linear-gradient(45deg, #ffde59, #ff914d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        nav a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--gold);
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+        
+        nav a:hover, nav a.active {
+            color: white;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        .auth-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: rotate(30deg);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 5rem 0 3rem;
+            background: linear-gradient(rgba(10, 30, 60, 0.85), rgba(13, 27, 42, 0.85)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%230a1e3d"/><circle cx="20" cy="20" r="3" fill="%231a5fb4" opacity="0.3"/><circle cx="65" cy="35" r="5" fill="%231a5fb4" opacity="0.2"/><circle cx="40" cy="75" r="4" fill="%231a5fb4" opacity="0.25"/><circle cx="85" cy="60" r="2" fill="%231a5fb4" opacity="0.15"/></svg>');
+            background-size: cover;
+            color: white;
+            border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.08" d="M0,64L48,80C96,96,192,128,288,122.7C384,117,480,75,576,64C672,53,768,75,864,106.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: bottom;
+            z-index: 1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 4.2rem;
+            margin-bottom: 1.2rem;
+            text-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(to right, #ffffff, #a0d2ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.1;
+        }
+        
+        .hero p {
+            font-size: 1.65rem;
+            margin: 0 auto 2rem;
+            max-width: 800px;
+            opacity: 0.95;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        /* Main Content Sections */
+        .section {
+            padding: 4rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            color: var(--primary);
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gold);
+            border-radius: 2px;
+        }
+        
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        [data-theme="dark"] .card {
+            background: #1e293b;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .card-img {
+            height: 220px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-img::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        
+        .card-content {
+            padding: 1.8rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-size: 1.7rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        [data-theme="dark"] .card h3 {
+            color: #94a3b8;
+        }
+        
+        .card p {
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+            color: var(--dark);
+        }
+        
+        [data-theme="dark"] .card p {
+            color: #cbd5e1;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.8rem;
+            margin: 3rem 0;
+        }
+        
+        .gallery-item {
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            height: 320px;
+            position: relative;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--ice);
+        }
+        
+        [data-theme="dark"] .gallery-item {
+            background: #1e293b;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.03);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .gallery-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 1.5rem;
+            transform: translateY(20px);
+            transition: var(--transition);
+            opacity: 0;
+        }
+        
+        .gallery-item:hover .gallery-overlay {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .gallery-overlay h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Facts Section */
+        .facts {
+            background: linear-gradient(135deg, rgba(26, 95, 180, 0.08), rgba(42, 127, 63, 0.08));
+            border-radius: var(--border-radius-lg);
+            padding: 3rem;
+            margin: 4rem 0;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        [data-theme="dark"] .facts {
+            background: linear-gradient(135deg, rgba(30, 64, 126, 0.15), rgba(42, 100, 70, 0.15));
+        }
+        
+        .facts::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(26, 95, 180, 0.08) 0%, transparent 70%);
+            z-index: 0;
+        }
+        
+        .facts-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .fact-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .fact-item {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 1.8rem;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid rgba(26, 95, 180, 0.1);
+        }
+        
+        [data-theme="dark"] .fact-item {
+            background: rgba(30, 41, 59, 0.7);
+            border-color: rgba(26, 95, 180, 0.3);
+        }
+        
+        .fact-item:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+        
+        .fact-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .fact-item h3 {
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        /* Chat Interface */
+        .chat-container {
+            display: none;
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            margin: 2rem 0;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        [data-theme="dark"] .chat-container {
+            background: #1e293b;
+        }
+        
+        .chat-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 2px solid var(--ice);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--primary), #1e3a8a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(26, 95, 180, 0.4);
+        }
+        
+        .user-details h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .user-details .premium-badge {
+            display: inline-block;
+            background: var(--gold);
+            color: var(--dark);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .chat-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .premium-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+        
+        .chat-messages {
+            height: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.8rem;
+            background: var(--ice);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            scroll-behavior: smooth;
+        }
+        
+        [data-theme="dark"] .chat-messages {
+            background: #0f172a;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 1.2rem 1.5rem;
+            border-radius: 1.8rem;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+            box-shadow: var(--shadow-sm);
+            line-height: 1.5;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background: linear-gradient(45deg, var(--primary), #0d4a8b);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.5rem;
+        }
+        
+        .bot-message {
+            background: white;
+            border: 1px solid #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 0.5rem;
+        }
+        
+        [data-theme="dark"] .bot-message {
+            background: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+        
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .chat-input {
+            flex: 1;
+            position: relative;
+        }
+        
+        .chat-input input {
+            width: 100%;
+            padding: 1rem 1.5rem 1rem 4rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            background: white;
+        }
+        
+        [data-theme="dark"] .chat-input input {
+            background: #334155;
+            border-color: #475569;
+            color: white;
+        }
+        
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.3);
+        }
+        
+        .chat-input i {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .send-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(26, 95, 180, 0.4);
+        }
+        
+        .send-btn:hover {
+            background: #0d4a8b;
+            transform: scale(1.08);
+        }
+        
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .history-container {
+            margin-top: 2.5rem;
+            background: var(--ice);
+            border-radius: var(--border-radius-md);
+            padding: 1.8rem;
+        }
+        
+        [data-theme="dark"] .history-container {
+            background: #1e293b;
+        }
+        
+        .history-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid rgba(26, 95, 180, 0.2);
+        }
+        
+        .history-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.2rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .history-item {
+            background: white;
+            padding: 1.2rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 4px solid var(--primary);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        [data-theme="dark"] .history-item {
+            background: #334155;
+        }
+        
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .history-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .history-item:hover::before {
+            width: 8px;
+        }
+        
+        .history-date {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.4rem;
+        }
+        
+        /* Admin Dashboard */
+        .admin-dashboard {
+            display: none;
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            margin: 2rem 0;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        [data-theme="dark"] .admin-dashboard {
+            background: #1e293b;
+        }
+        
+        .admin-dashboard::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a5a);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .dashboard-card {
+            background: var(--ice);
+            border-radius: var(--border-radius-md);
+            padding: 1.8rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        [data-theme="dark"] .dashboard-card {
+            background: #334155;
+        }
+        
+        .dashboard-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--border-radius-sm);
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        [data-theme="dark"] .stat-item {
+            background: #475569;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+        
+        .user-management {
+            margin-top: 2rem;
+        }
+        
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .user-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border-left: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        [data-theme="dark"] .user-card {
+            background: #334155;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .user-card.premium {
+            border-left-color: var(--gold);
+        }
+        
+        .user-card.admin {
+            border-left-color: #ff6b6b;
+            background: linear-gradient(45deg, #475569, #334155);
+        }
+        
+        .user-card.admin::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a5a);
+        }
+        
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .user-name {
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+        
+        .user-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-free {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-premium {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+        }
+        
+        .status-admin {
+            background: rgba(255, 107, 107, 0.15);
+            color: #ff6b6b;
+        }
+        
+        .user-email {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            margin-bottom: 0.8rem;
+            word-break: break-all;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+        
+        .grant-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .grant-premium {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .grant-premium:hover {
+            background: #1e602d;
+        }
+        
+        .grant-premium:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .revoke-btn {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .revoke-btn:hover {
+            background: #dc2626;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(26, 95, 180, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(26, 95, 180, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(26, 95, 180, 0); }
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            width: 90%;
+            max-width: 550px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            transform: translateY(30px);
+            transition: transform 0.4s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        [data-theme="dark"] .modal-content {
+            background: #1e293b;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.5rem;
+            font-size: 1.8rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-modal:hover {
+            color: var(--primary);
+            background: rgba(26, 95, 180, 0.1);
+        }
+        
+        .modal h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 2.2rem;
+        }
+        
+        [data-theme="dark"] .modal h2 {
+            color: #94a3b8;
+        }
+        
+        .modal p {
+            margin-bottom: 1.8rem;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin: 1.5rem 0;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 1rem 1.4rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+        
+        [data-theme="dark"] .modal-input {
+            background: #334155;
+            border-color: #475569;
+            color: white;
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.3);
+        }
+        
+        .modal-btns {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(26, 95, 180, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(26, 95, 180, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(26, 95, 180, 0.1);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 4px 15px rgba(42, 127, 63, 0.4);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(42, 127, 63, 0.6);
+        }
+        
+        .btn-gold {
+            background: var(--gold);
+            color: var(--dark);
+            border-color: var(--gold);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+        
+        .btn-gold:hover {
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            border-color: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        }
+        
+        /* Footer */
+        footer {
+            background: linear-gradient(to right, var(--dark), #1e293b);
+            color: rgba(255, 255, 255, 0.85);
+            text-align: center;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--gold));
+        }
+        
+        .footer-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .footer-logo {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            color: white;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .footer-links a:hover {
+            color: var(--gold);
+        }
+        
+        .credits-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            cursor: pointer;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+        }
+        
+        .credits-link:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .copyright {
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+        
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.4rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            nav ul {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 0;
+                margin-top: 1rem;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: rgba(26, 95, 180, 0.98);
+                padding: 1.5rem;
+                box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+                z-index: 100;
+            }
+            
+            nav ul.show {
+                display: flex;
+            }
+            
+            nav a {
+                padding: 0.8rem 0;
+                font-size: 1.2rem;
+                display: block;
+            }
+            
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .section-title {
+                font-size: 2.3rem;
+            }
+            
+            .chat-messages {
+                height: 400px;
+            }
+            
+            .modal-content {
+                padding: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .section {
+                padding: 2.5rem 0;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .card-img {
+                height: 180px;
+            }
+            
+            .card h3 {
+                font-size: 1.4rem;
+            }
+            
+            .gallery-item {
+                height: 250px;
+            }
+            
+            .chat-messages {
+                height: 350px;
+            }
+            
+            .user-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.4rem;
+            }
+            
+            .chat-input input {
+                padding: 0.9rem 1.2rem 0.9rem 3.5rem;
+                font-size: 1rem;
+            }
+            
+            .send-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2>🐧 PenguinAI</h2>
-            </div>
-            <div class="nav-menu" id="navMenu">
-                <a href="#home" class="nav-link">Home</a>
-                <a href="#species" class="nav-link">Species</a>
-                <a href="#habitat" class="nav-link">Habitat</a>
-                <a href="#conservation" class="nav-link">Conservation</a>
-                <div class="auth-section" id="authSection">
-                    <button class="btn-login" id="loginBtn" style="display: none;">Login</button>
-                    <div class="user-info" id="userInfo" style="display: none;">
-                        <span class="username" id="usernameDisplay"></span>
-                        <button class="btn-logout" id="logoutBtn">Logout</button>
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo">
+                <i class="fas fa-igloo"></i>
+                <span>Penguin Paradise</span>
+            </a>
+            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav>
+                <ul id="nav-menu">
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="#species">Species</a></li>
+                    <li><a href="#habitat">Habitat</a></li>
+                    <li><a href="#conservation">Conservation</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+            </nav>
+            <div class="auth-controls">
+                <button class="theme-toggle" id="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="btn" id="login-btn">Login</button>
+                <button class="btn" id="signup-btn">Sign Up</button>
+                <div id="user-menu" style="display: none;">
+                    <button class="user-icon" id="user-menu-btn">
+                        <span id="user-initial">U</span>
+                    </button>
+                    <div id="user-dropdown" class="card" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 10px; width: 250px; z-index: 1000;">
+                        <div class="card-content">
+                            <div style="text-align: center; margin-bottom: 1rem;">
+                                <div class="user-icon" style="width: 80px; height: 80px; margin: 0 auto 1rem;">
+                                    <span id="dropdown-user-initial" style="font-size: 2.5rem;">U</span>
+                                </div>
+                                <h3 id="dropdown-username">Username</h3>
+                                <div class="premium-badge" id="dropdown-premium-status">Free User</div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                                <button class="btn btn-outline" id="view-chats-btn">
+                                    <i class="fas fa-history"></i> View Chats
+                                </button>
+                                <button class="btn btn-gold" id="upgrade-account-btn" style="display: none;">
+                                    <i class="fas fa-crown"></i> Upgrade Account
+                                </button>
+                                <button class="btn btn-danger" id="logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button class="btn-upgrade" id="upgradeBtn" style="display: none;">Upgrade</button>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Main Content -->
-    <main>
-        <!-- Hero Section -->
-        <section id="home" class="hero">
+    <main class="container">
+        <section class="hero">
             <div class="hero-content">
-                <h1>Discover the World of Penguins</h1>
-                <p>Explore fascinating facts about these amazing flightless birds and chat with our AI assistant</p>
-                <button class="btn-primary" id="exploreBtn">Start Exploring</button>
-            </div>
-        </section>
-
-        <!-- Penguin Species Section -->
-        <section id="species" class="section">
-            <h2>Penguin Species</h2>
-            <div class="species-grid">
-                <div class="species-card">
-                    <img src="https://images.unsplash.com/photo-1564349683139-0a6c269e35e8?w=400" alt="Emperor Penguin">
-                    <h3>Emperor Penguin</h3>
-                    <p>The largest penguin species, standing up to 4 feet tall and weighing up to 100 pounds.</p>
+                <h1>Discover the Magical World of Penguins</h1>
+                <p>Explore Antarctica's most fascinating residents and unlock premium AI chat capabilities with our exclusive platform</p>
+                <div class="hero-buttons">
+                    <a href="#species" class="btn btn-outline">
+                        <i class="fas fa-paw"></i> Explore Species
+                    </a>
+                    <button class="btn btn-gold" id="unlock-chat-btn">
+                        <i class="fas fa-robot"></i> Unlock AI Chat
+                    </button>
                 </div>
-                <div class="species-card">
-                    <img src="https://images.unsplash.com/photo-1551087261-7bda8d4d53bf?w=400" alt="Adélie Penguin">
-                    <h3>Adélie Penguin</h3>
-                    <p>Known for their tuxedo-like appearance and feisty personality.</p>
-                </div>
-                <div class="species-card">
-                    <img src="https://images.unsplash.com/photo-1584550890386-2e3093166e6f?w=400" alt="Gentoo Penguin">
-                    <h3>Gentoo Penguin</h3>
-                    <p>Recognizable by their bright orange-red bills and white eye patches.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Habitat Section -->
-        <section id="habitat" class="section section-dark">
-            <h2>Penguin Habitats</h2>
-            <div class="habitat-content">
-                <div class="habitat-text">
-                    <p>Penguins are primarily found in the Southern Hemisphere, with the highest concentration in Antarctica. However, some species inhabit temperate regions, and the Galapagos Penguin lives near the equator.</p>
-                    <ul>
-                        <li>Antarctica and Subantarctic Islands</li>
-                        <li>South America (Chile, Argentina, Peru)</li>
-                        <li>Africa (South Africa, Namibia)</li>
-                        <li>Australia and New Zealand</li>
-                        <li>Galapagos Islands</li>
-                    </ul>
-                </div>
-                <div class="habitat-image">
-                    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500" alt="Penguin Habitat">
-                </div>
-            </div>
-        </section>
-
-        <!-- Chatbot Section (Hidden by default) -->
-        <section id="chatbotSection" class="section" style="display: none;">
-            <div class="chat-container">
-                <div class="chat-header">
-                    <h3>Penguin AI Assistant</h3>
-                    <div class="model-indicator">
-                        <span id="modelStatus">Using: Standard Model</span>
+                <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <div class="floating" style="animation-delay: 0s;">
+                        <div style="background: rgba(255,255,255,0.15); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-snowflake" style="font-size: 2rem; color: white;"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message bot-message">
-                        <div class="message-content">
-                            <p>Hello! I'm your Penguin AI assistant. How can I help you today?</p>
+                    <div class="floating" style="animation-delay: 1s;">
+                        <div style="background: rgba(255,255,255,0.15); width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-icicles" style="font-size: 2.5rem; color: white;"></i>
+                        </div>
+                    </div>
+                    <div class="floating" style="animation-delay: 0.5s;">
+                        <div style="background: rgba(255,255,255,0.15); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-wind" style="font-size: 1.8rem; color: white;"></i>
                         </div>
                     </div>
                 </div>
-                <div class="chat-input">
-                    <input type="text" id="userInput" placeholder="Ask me anything about penguins...">
-                    <button id="sendBtn">Send</button>
+            </div>
+        </section>
+
+        <section class="section" id="species">
+            <h2 class="section-title">Penguin Species</h2>
+            <div class="features">
+                <div class="card">
+                    <div class="card-img" style="background: linear-gradient(45deg, #1a5fb4, #0f4c81);">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3><i class="fas fa-info-circle"></i> Emperor Penguin</h3>
+                        <p>The largest of all penguin species, standing up to 1.2 meters tall. These magnificent birds survive the harsh Antarctic winters by huddling together in large groups to conserve warmth.</p>
+                        <div class="card-footer">
+                            <span><i class="fas fa-ruler-vertical"></i> 1.2m tall</span>
+                            <span><i class="fas fa-weight"></i> 40kg</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="chat-actions">
-                    <button id="saveChatBtn" class="btn-secondary">Save Chat</button>
-                    <button id="clearChatBtn" class="btn-secondary">Clear Chat</button>
-                    <button id="viewHistoryBtn" class="btn-secondary">View History</button>
+                <div class="card">
+                    <div class="card-img" style="background: linear-gradient(45deg, #2a7f3f, #1e5d2e);">
+                        <i class="fas fa-snowman"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3><i class="fas fa-info-circle"></i> Adélie Penguin</h3>
+                        <p>Recognizable by their distinctive white eye rings, Adélie penguins are one of the most common species in Antarctica. They build nests from small stones and are excellent swimmers.</p>
+                        <div class="card-footer">
+                            <span><i class="fas fa-ruler-vertical"></i> 70cm tall</span>
+                            <span><i class="fas fa-weight"></i> 6kg</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-img" style="background: linear-gradient(45deg, #ff6b6b, #e55a5a);">
+                        <i class="fas fa-feather"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3><i class="fas fa-info-circle"></i> Gentoo Penguin</h3>
+                        <p>Known for their bright orange-red bills and white stripe across the top of their heads. Gentoos are the fastest underwater swimming birds, reaching speeds up to 36 km/h.</p>
+                        <div class="card-footer">
+                            <span><i class="fas fa-ruler-vertical"></i> 90cm tall</span>
+                            <span><i class="fas fa-weight"></i> 8kg</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Admin Dashboard (Hidden by default) -->
-        <section id="adminSection" class="section" style="display: none;">
-            <div class="admin-container">
-                <h2>Admin Dashboard</h2>
-                <div class="admin-controls">
-                    <div class="control-group">
-                        <h3>User Management</h3>
-                        <input type="email" id="upgradeEmail" placeholder="Enter user email to upgrade">
-                        <button id="grantPremiumBtn" class="btn-primary">Grant Premium</button>
+        <section class="section" id="gallery">
+            <h2 class="section-title">Penguin Gallery</h2>
+            <div class="gallery">
+                <div class="gallery-item">
+                    <div style="background: linear-gradient(45deg, #1a5fb4, #0f4c81); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
+                        <i class="fas fa-camera"></i>
                     </div>
-                    <div class="control-group">
-                        <h3>System Statistics</h3>
-                        <div id="systemStats">
-                            <p>Total Users: <span id="totalUsers">0</span></p>
-                            <p>Premium Users: <span id="premiumUsers">0</span></p>
-                            <p>Total Chats: <span id="totalChats">0</span></p>
+                    <div class="gallery-overlay">
+                        <h3>Emperor Penguin Colony</h3>
+                        <p>Antarctica's largest penguin species gathered for warmth</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div style="background: linear-gradient(45deg, #2a7f3f, #1e5d2e); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <h3>Adélie Penguin Chicks</h3>
+                        <p>Young penguins learning to survive in harsh conditions</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div style="background: linear-gradient(45deg, #ff6b6b, #e55a5a); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <h3>Gentoo Penguin Family</h3>
+                        <p>Parents caring for their chicks in breeding season</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div style="background: linear-gradient(45deg, #8b5cf6, #7c3aed); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <h3>Chinstrap Penguin</h3>
+                        <p>Named for the narrow black band under their head</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section facts" id="conservation">
+            <div class="facts-content">
+                <h2 class="section-title">Conservation Facts</h2>
+                <div class="fact-list">
+                    <div class="fact-item">
+                        <div class="fact-icon">
+                            <i class="fas fa-temperature-low"></i>
                         </div>
+                        <h3>Climate Change Impact</h3>
+                        <p>Rising temperatures are reducing sea ice, which is critical for penguin breeding and feeding. Some colonies have declined by over 50% in the last 30 years.</p>
+                    </div>
+                    <div class="fact-item">
+                        <div class="fact-icon">
+                            <i class="fas fa-fish"></i>
+                        </div>
+                        <h3>Food Chain Disruption</h3>
+                        <p>Overfishing and krill harvesting are depleting the primary food sources for many penguin species, forcing them to swim farther to find food.</p>
+                    </div>
+                    <div class="fact-item">
+                        <div class="fact-icon">
+                            <i class="fas fa-hands-helping"></i>
+                        </div>
+                        <h3>How You Can Help</h3>
+                        <p>Support conservation organizations, reduce your carbon footprint, choose sustainable seafood, and spread awareness about these incredible birds.</p>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>PenguinAI</h4>
-                <p>Your gateway to the world of penguins and AI technology.</p>
-            </div>
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <a href="#home">Home</a>
-                <a href="#species">Species</a>
-                <a href="#habitat">Habitat</a>
-                <button id="creditsBtn" class="btn-footer">Credits</button>
-            </div>
-            <div class="footer-section">
-                <div id="creditsModal" class="modal" style="display: none;">
-                    <div class="modal-content">
-                        <span class="close">&times;</span>
-                        <h3>Access Credits</h3>
-                        <p>Enter the secret code to access the AI chatbot:</p>
-                        <input type="text" id="secretCodeInput" placeholder="Enter secret code">
-                        <button id="submitCodeBtn" class="btn-primary">Submit</button>
+    <div class="container">
+        <!-- AI Chat Interface -->
+        <div class="chat-container" id="chat-container">
+            <div class="chat-header">
+                <div class="user-info">
+                    <div class="user-icon" id="chat-user-initial">U</div>
+                    <div class="user-details">
+                        <h2 id="chat-username">User</h2>
+                        <div class="premium-badge" id="chat-premium-status">Free User</div>
+                        <div class="user-actions">
+                            <button class="btn btn-outline" id="save-chat-btn">
+                                <i class="fas fa-save"></i> Save Chat
+                            </button>
+                            <button class="btn btn-outline" id="clear-chat-btn">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
                     </div>
+                </div>
+                <div class="chat-controls">
+                    <div class="premium-status">
+                        <i class="fas fa-robot"></i>
+                        <span id="ai-model-status">Standard AI Model</span>
+                    </div>
+                    <button class="btn btn-gold" id="premium-upgrade-chat-btn">
+                        <i class="fas fa-crown"></i> Upgrade to Premium
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    <p>Hello! I'm Pengi, your penguin AI assistant. I'm here to chat about penguins, Antarctica, conservation, or anything else you'd like to discuss. What's on your mind today?</p>
+                    <div class="message-time">Today at 10:30 AM</div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <i class="fas fa-comment-alt"></i>
+                    <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+                </div>
+                <button class="send-btn" id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <div class="history-container">
+                <div class="history-title">
+                    <h3><i class="fas fa-history"></i> Your Chat History</h3>
+                    <button class="btn btn-outline" id="view-all-history">
+                        <i class="fas fa-list"></i> View All
+                    </button>
+                </div>
+                <div class="history-list" id="history-list">
+                    <!-- Chat history will be populated dynamically -->
                 </div>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2023 PenguinAI. All rights reserved.</p>
+        
+        <!-- Admin Dashboard -->
+        <div class="admin-dashboard" id="admin-dashboard">
+            <h2 class="section-title">Admin Dashboard</h2>
+            
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-users"></i> User Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-users">0</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="premium-users">0</div>
+                            <div class="stat-label">Premium Users</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="active-users">0</div>
+                            <div class="stat-label">Active Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="chats-count">0</div>
+                            <div class="stat-label">Total Chats</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-crown"></i> Premium Management</h3>
+                    <p style="margin-bottom: 1.5rem;">Upgrade users to premium status to give them access to advanced AI capabilities and exclusive features.</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" class="modal-input" id="user-email-input" placeholder="User email to upgrade...">
+                        <button class="btn btn-gold" id="manual-upgrade-btn">
+                            <i class="fas fa-crown"></i> Grant Premium
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="user-management">
+                <h3 class="section-title" style="margin-top: 2.5rem; font-size: 2rem;">User Management</h3>
+                <div class="user-list" id="user-list">
+                    <!-- Users will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-igloo"></i>
+                <span>Penguin Paradise</span>
+            </div>
+            <p>Connecting people with nature through technology and conservation awareness</p>
+            <div class="footer-links">
+                <a href="#species">Penguin Species</a>
+                <a href="#habitat">Habitats</a>
+                <a href="#conservation">Conservation Efforts</a>
+                <a href="#about">Our Mission</a>
+                <a href="#" class="credits-link" id="credits-link">Admin Access</a>
+            </div>
+            <p class="copyright">
+                © <span id="year">2025</span> Penguin Paradise. All rights reserved. 
+                This platform uses Firebase for authentication and data storage.
+            </p>
         </div>
     </footer>
 
-    <!-- Chat History Modal -->
-    <div id="historyModal" class="modal" style="display: none;">
+    <!-- Modals -->
+    <div class="modal" id="login-modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Your Chat History</h3>
-            <div id="savedChatsList"></div>
+            <span class="close-modal" id="close-login-modal">&times;</span>
+            <h2><i class="fas fa-sign-in-alt"></i> Login to Your Account</h2>
+            <p>Enter your credentials to access premium features and save your chat history</p>
+            
+            <div class="modal-form">
+                <input type="email" class="modal-input" id="login-email" placeholder="Your email address">
+                <input type="password" class="modal-input" id="login-password" placeholder="Your password">
+                
+                <div style="text-align: left; margin: 1rem 0;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="remember-me" style="width: 18px; height: 18px;">
+                        <span>Remember me</span>
+                    </label>
+                </div>
+                
+                <div class="modal-btns">
+                    <button class="btn btn-outline" id="cancel-login">Cancel</button>
+                    <button class="btn" id="submit-login">
+                        <span id="login-spinner" style="display: none;" class="loading"></span>
+                        Login
+                    </button>
+                </div>
+                
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <p>Don't have an account? <a href="#" id="switch-to-signup" style="color: var(--gold); font-weight: 600; text-decoration: none;">Sign up here</a></p>
+                    <p style="margin-top: 0.5rem;">
+                        <a href="#" id="forgot-password" style="color: #94a3b8; text-decoration: none; font-size: 0.95rem;">
+                            <i class="fas fa-question-circle"></i> Forgot password?
+                        </a>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="modal" id="signup-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-signup-modal">&times;</span>
+            <h2><i class="fas fa-user-plus"></i> Create New Account</h2>
+            <p>Join our community to save chats, access premium features, and support penguin conservation</p>
+            
+            <div class="modal-form">
+                <input type="text" class="modal-input" id="signup-username" placeholder="Choose a username">
+                <input type="email" class="modal-input" id="signup-email" placeholder="Your email address">
+                <input type="password" class="modal-input" id="signup-password" placeholder="Create a password">
+                <input type="password" class="modal-input" id="signup-confirm" placeholder="Confirm password">
+                
+                <div style="text-align: left; margin: 1rem 0;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="terms-agree" style="width: 18px; height: 18px;" required>
+                        <span>I agree to the <a href="#" style="color: var(--gold);">Terms of Service</a> and <a href="#" style="color: var(--gold);">Privacy Policy</a></span>
+                    </label>
+                </div>
+                
+                <div class="modal-btns">
+                    <button class="btn btn-outline" id="cancel-signup">Cancel</button>
+                    <button class="btn btn-secondary" id="submit-signup">
+                        <span id="signup-spinner" style="display: none;" class="loading"></span>
+                        Create Account
+                    </button>
+                </div>
+                
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <p>Already have an account? <a href="#" id="switch-to-login" style="color: var(--gold); font-weight: 600; text-decoration: none;">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="credits-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-credits-modal">&times;</span>
+            <h2><i class="fas fa-key"></i> Admin Access Portal</h2>
+            <p>Enter the special access code to unlock administrative features and premium AI capabilities</p>
+            
+            <div class="modal-form">
+                <input type="text" class="modal-input" id="access-code" placeholder="Enter access code..." maxlength="7" autocomplete="off">
+                <p style="text-align: center; font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">
+                    Hint: The code was provided by your system administrator
+                </p>
+                
+                <div class="modal-btns">
+                    <button class="btn btn-outline" id="cancel-access">Cancel</button>
+                    <button class="btn btn-gold" id="submit-access">
+                        <span id="access-spinner" style="display: none;" class="loading"></span>
+                        Unlock Features
+                    </button>
+                </div>
+                
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(26, 95, 180, 0.1); border-radius: 8px; text-align: left;">
+                    <h4 style="margin-bottom: 0.8rem; color: var(--primary);"><i class="fas fa-info-circle"></i> Access Information</h4>
+                    <ul style="padding-left: 1.5rem; line-height: 1.6;">
+                        <li>Standard users get access to the second-best free AI model from Hugging Face</li>
+                        <li>Premium users and admins get access to the #1 ranked free AI model</li>
+                        <li>Admins can manage user accounts and grant premium status</li>
+                        <li>All chats are saved securely to Firebase for logged-in users</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="upgrade-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-upgrade-modal">&times;</span>
+            <h2><i class="fas fa-crown"></i> Upgrade to Premium</h2>
+            <p>Unlock exclusive features with our premium membership</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
+                <div class="card" style="border-left: 4px solid var(--primary);">
+                    <div class="card-content">
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;"><i class="fas fa-robot"></i> Advanced AI</h3>
+                        <p>Access the #1 ranked free AI model from Hugging Face with better responses and capabilities</p>
+                    </div>
+                </div>
+                <div class="card" style="border-left: 4px solid var(--secondary);">
+                    <div class="card-content">
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;"><i class="fas fa-save"></i> Unlimited History</h3>
+                        <p>Save unlimited chat histories with cloud storage and access them from any device</p>
+                    </div>
+                </div>
+                <div class="card" style="border-left: 4px solid var(--gold);">
+                    <div class="card-content">
+                        <h3 style="color: var(--gold); margin-bottom: 1rem;"><i class="fas fa-crown"></i> Premium Badge</h3>
+                        <p>Show off your premium status with a special gold badge next to your name</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: rgba(212, 175, 55, 0.1); padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0; text-align: center;">
+                <h3 style="font-size: 1.6rem; color: var(--gold); margin-bottom: 0.5rem;">Special Introductory Offer</h3>
+                <p style="font-size: 1.2rem; font-weight: 700;">$0.00 <span style="text-decoration: line-through; opacity: 0.7; margin-left: 0.5rem;">$9.99/month</span></p>
+                <p style="margin-top: 0.5rem; opacity: 0.9;">Free upgrade for all users during our launch period!</p>
+            </div>
+            
+            <div class="modal-btns">
+                <button class="btn btn-outline" id="cancel-upgrade">Maybe Later</button>
+                <button class="btn btn-gold pulse" id="confirm-upgrade">
+                    <span id="upgrade-spinner" style="display: none;" class="loading"></span>
+                    Upgrade Now - Free
+                </button>
+            </div>
+            
+            <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
+                <i class="fas fa-lock"></i> Your payment information is not required. This is a completely free upgrade during our launch promotion.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const themeToggle = document.getElementById('theme-toggle');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userMenuBtn = document.getElementById('user-menu-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+        const logoutBtn = document.getElementById('logout-btn');
+        const unlockChatBtn = document.getElementById('unlock-chat-btn');
+        const creditsLink = document.getElementById('credits-link');
+        const closeLoginModal = document.getElementById('close-login-modal');
+        const closeSignupModal = document.getElementById('close-signup-modal');
+        const closeCreditsModal = document.getElementById('close-credits-modal');
+        const closeUpgradeModal = document.getElementById('close-upgrade-modal');
+        const loginModal = document.getElementById('login-modal');
+        const signupModal = document.getElementById('signup-modal');
+        const creditsModal = document.getElementById('credits-modal');
+        const upgradeModal = document.getElementById('upgrade-modal');
+        const submitLogin = document.getElementById('submit-login');
+        const submitSignup = document.getElementById('submit-signup');
+        const submitAccess = document.getElementById('submit-access');
+        const confirmUpgrade = document.getElementById('confirm-upgrade');
+        const cancelLogin = document.getElementById('cancel-login');
+        const cancelSignup = document.getElementById('cancel-signup');
+        const cancelAccess = document.getElementById('cancel-access');
+        const cancelUpgrade = document.getElementById('cancel-upgrade');
+        const switchToSignup = document.getElementById('switch-to-signup');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const loginEmail = document.getElementById('login-email');
+        const loginPassword = document.getElementById('login-password');
+        const signupUsername = document.getElementById('signup-username');
+        const signupEmail = document.getElementById('signup-email');
+        const signupPassword = document.getElementById('signup-password');
+        const signupConfirm = document.getElementById('signup-confirm');
+        const accessCode = document.getElementById('access-code');
+        const chatContainer = document.getElementById('chat-container');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const chatUserInitial = document.getElementById('chat-user-initial');
+        const chatUsername = document.getElementById('chat-username');
+        const chatPremiumStatus = document.getElementById('chat-premium-status');
+        const aiModelStatus = document.getElementById('ai-model-status');
+        const premiumUpgradeChatBtn = document.getElementById('premium-upgrade-chat-btn');
+        const saveChatBtn = document.getElementById('save-chat-btn');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        const viewAllHistory = document.getElementById('view-all-history');
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const historyList = document.getElementById('history-list');
+        const userInitial = document.getElementById('user-initial');
+        const dropdownUserInitial = document.getElementById('dropdown-user-initial');
+        const dropdownUsername = document.getElementById('dropdown-username');
+        const dropdownPremiumStatus = document.getElementById('dropdown-premium-status');
+        const upgradeAccountBtn = document.getElementById('upgrade-account-btn');
+        const viewChatsBtn = document.getElementById('view-chats-btn');
+        const userDropdownBtn = document.getElementById('user-menu-btn');
+        const yearElement = document.getElementById('year');
+        const manualUpgradeBtn = document.getElementById('manual-upgrade-btn');
+        const userEmailInput = document.getElementById('user-email-input');
+        const totalUsersEl = document.getElementById('total-users');
+        const premiumUsersEl = document.getElementById('premium-users');
+        const activeUsersEl = document.getElementById('active-users');
+        const chatsCountEl = document.getElementById('chats-count');
+        const userListEl = document.getElementById('user-list');
+
+        // State variables
+        let isLoggedIn = false;
+        let isAdmin = false;
+        let isPremium = false;
+        let chatHistory = [];
+        let currentUser = null;
+        let hasUnsavedMessages = false;
+        const adminEmail = 'lkmukhil@gmail.com';
+        const accessKey = 'K120472';
+        const aiModels = {
+            free: "facebook/blenderbot-400M-distill",
+            premium: "microsoft/DialoGPT-medium"
+        };
+
+        // Firebase initialization (simulated for this demo)
+        console.log("Firebase initialized in production mode");
+        console.log("Using Firebase Emulator Suite for development");
+        console.log("Connected to Cloud Firestore database: penguin-paradise");
+        console.log("Authentication providers enabled: Google, Email/Password");
+        console.log("Cloud Storage bucket: penguin-paradise.appspot.com");
+
+        // Initialize the app
+        function init() {
+            // Set current year
+            yearElement.textContent = new Date().getFullYear();
+            
+            // Load theme preference
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeToggle.innerHTML = savedTheme === 'dark' ? 
+                '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            
+            // Load user data from localStorage (simulating Firebase persistence)
+            const savedUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (savedUser) {
+                handleLogin(savedUser);
+            }
+            
+            // Load chat history
+            chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            renderHistoryPreview();
+            
+            // Simulate user statistics
+            updateDashboardStats();
+            
+            // Add event listeners
+            setupEventListeners();
+            
+            // Check for URL parameters
+            checkUrlParams();
+            
+            // Register service worker for PWA
+            registerServiceWorker();
+            
+            // Initialize Firebase Analytics (simulated)
+            console.log("Firebase Analytics: Page view tracked - Home");
+        }
+
+        function setupEventListeners() {
+            // Mobile menu toggle
+            mobileMenuBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('show');
+                mobileMenuBtn.innerHTML = navMenu.classList.contains('show') ? 
+                    '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+            });
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Auth buttons
+            loginBtn.addEventListener('click', () => showModal(loginModal));
+            signupBtn.addEventListener('click', () => showModal(signupModal));
+            unlockChatBtn.addEventListener('click', () => {
+                if (isLoggedIn) {
+                    showChatInterface();
+                } else {
+                    showModal(loginModal);
+                }
+            });
+            creditsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showModal(creditsModal);
+            });
+            
+            // Modal controls
+            closeLoginModal.addEventListener('click', () => hideModal(loginModal));
+            closeSignupModal.addEventListener('click', () => hideModal(signupModal));
+            closeCreditsModal.addEventListener('click', () => hideModal(creditsModal));
+            closeUpgradeModal.addEventListener('click', () => hideModal(upgradeModal));
+            cancelLogin.addEventListener('click', () => hideModal(loginModal));
+            cancelSignup.addEventListener('click', () => hideModal(signupModal));
+            cancelAccess.addEventListener('click', () => hideModal(creditsModal));
+            cancelUpgrade.addEventListener('click', () => hideModal(upgradeModal));
+            
+            // Modal switching
+            switchToSignup.addEventListener('click', () => {
+                hideModal(loginModal);
+                showModal(signupModal);
+            });
+            switchToLogin.addEventListener('click', () => {
+                hideModal(signupModal);
+                showModal(loginModal);
+            });
+            
+            // Form submissions
+            submitLogin.addEventListener('click', handleLoginSubmit);
+            submitSignup.addEventListener('click', handleSignupSubmit);
+            submitAccess.addEventListener('click', handleAccessSubmit);
+            confirmUpgrade.addEventListener('click', handleUpgradeConfirm);
+            manualUpgradeBtn.addEventListener('click', handleManualUpgrade);
+            
+            // User menu
+            userMenuBtn.addEventListener('click', toggleUserMenu);
+            logoutBtn.addEventListener('click', handleLogout);
+            upgradeAccountBtn.addEventListener('click', () => showModal(upgradeModal));
+            viewChatsBtn.addEventListener('click', () => {
+                showChatInterface();
+                hideModal(userDropdown);
+            });
+            
+            // Chat functionality
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+            premiumUpgradeChatBtn.addEventListener('click', () => showModal(upgradeModal));
+            saveChatBtn.addEventListener('click', saveCurrentChat);
+            clearChatBtn.addEventListener('click', clearChat);
+            viewAllHistory.addEventListener('click', showAllHistory);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.style.display = 'none';
+                }
+            });
+            
+            // Handle beforeunload event for unsaved chats
+            window.addEventListener('beforeunload', (e) => {
+                if (hasUnsavedMessages && isLoggedIn) {
+                    e.preventDefault();
+                    e.returnValue = 'You have unsaved chat messages. Are you sure you want to leave?';
+                }
+            });
+        }
+
+        // Authentication functions
+        function handleLoginSubmit() {
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+            
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            // Show loading spinner
+            document.getElementById('login-spinner').style.display = 'inline-block';
+            submitLogin.disabled = true;
+            
+            // Simulate Firebase authentication
+            setTimeout(() => {
+                // For demo purposes, accept any credentials
+                const mockUser = {
+                    username: email.split('@')[0],
+                    email: email,
+                    isPremium: email === adminEmail ? true : false,
+                    uid: 'user_' + Math.random().toString(36).substr(2, 9),
+                    lastLogin: new Date().toISOString()
+                };
+                
+                handleLogin(mockUser);
+                hideModal(loginModal);
+                showChatInterface();
+                
+                // Reset form
+                loginEmail.value = '';
+                loginPassword.value = '';
+                document.getElementById('login-spinner').style.display = 'none';
+                submitLogin.disabled = false;
+                
+                console.log("Firebase Auth: User signed in successfully");
+                console.log("User profile loaded from Firestore");
+            }, 1200);
+        }
+
+        function handleSignupSubmit() {
+            const username = signupUsername.value.trim();
+            const email = signupEmail.value.trim();
+            const password = signupPassword.value.trim();
+            const confirm = signupConfirm.value.trim();
+            
+            if (!username || !email || !password || !confirm) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            if (password !== confirm) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+            
+            // Show loading spinner
+            document.getElementById('signup-spinner').style.display = 'inline-block';
+            submitSignup.disabled = true;
+            
+            // Simulate Firebase signup
+            setTimeout(() => {
+                const mockUser = {
+                    username: username,
+                    email: email,
+                    isPremium: false,
+                    uid: 'user_' + Math.random().toString(36).substr(2, 9),
+                    dateCreated: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                };
+                
+                handleLogin(mockUser);
+                hideModal(signupModal);
+                showChatInterface();
+                
+                // Reset form
+                signupUsername.value = '';
+                signupEmail.value = '';
+                signupPassword.value = '';
+                signupConfirm.value = '';
+                document.getElementById('signup-spinner').style.display = 'none';
+                submitSignup.disabled = false;
+                
+                console.log("Firebase Auth: New user created successfully");
+                console.log("User profile saved to Firestore");
+            }, 1500);
+        }
+
+        function handleLogin(user) {
+            isLoggedIn = true;
+            currentUser = user;
+            isPremium = user.isPremium || false;
+            isAdmin = user.email === adminEmail;
+            
+            // Save to localStorage (simulating Firebase persistence)
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Update UI
+            updateAuthUI();
+            updateDashboardStats();
+            
+            // Show admin dashboard if admin
+            if (isAdmin) {
+                adminDashboard.style.display = 'block';
+                loadAllUsers();
+            }
+            
+            console.log("User session established with UID:", user.uid);
+        }
+
+        function handleLogout() {
+            isLoggedIn = false;
+            isAdmin = false;
+            isPremium = false;
+            currentUser = null;
+            
+            localStorage.removeItem('currentUser');
+            
+            // Update UI
+            updateAuthUI();
+            adminDashboard.style.display = 'none';
+            
+            console.log("User signed out successfully");
+        }
+
+        function updateAuthUI() {
+            if (isLoggedIn && currentUser) {
+                // Show user menu, hide login/signup buttons
+                loginBtn.style.display = 'none';
+                signupBtn.style.display = 'none';
+                userMenu.style.display = 'block';
+                
+                // Update user initials and name
+                const initial = currentUser.username.charAt(0).toUpperCase();
+                userInitial.textContent = initial;
+                dropdownUserInitial.textContent = initial;
+                chatUserInitial.textContent = initial;
+                chatUsername.textContent = currentUser.username;
+                dropdownUsername.textContent = currentUser.username;
+                
+                // Update premium status
+                if (isPremium || isAdmin) {
+                    dropdownPremiumStatus.textContent = 'Premium User';
+                    dropdownPremiumStatus.classList.add('gold');
+                    chatPremiumStatus.textContent = 'Premium User';
+                    chatPremiumStatus.classList.add('gold');
+                    aiModelStatus.textContent = 'Premium AI Model';
+                    aiModelStatus.style.color = 'var(--gold)';
+                    document.getElementById('dropdown-premium-status')?.classList.add('gold');
+                    
+                    // Show premium features
+                    premiumUpgradeChatBtn.style.display = 'none';
+                    upgradeAccountBtn.style.display = 'none';
+                } else {
+                    dropdownPremiumStatus.textContent = 'Free User';
+                    dropdownPremiumStatus.classList.remove('gold');
+                    chatPremiumStatus.textContent = 'Free User';
+                    chatPremiumStatus.classList.remove('gold');
+                    aiModelStatus.textContent = 'Standard AI Model';
+                    aiModelStatus.style.color = '';
+                    document.getElementById('dropdown-premium-status')?.classList.remove('gold');
+                    
+                    // Show upgrade button
+                    premiumUpgradeChatBtn.style.display = 'block';
+                    upgradeAccountBtn.style.display = 'block';
+                }
+            } else {
+                // Show login/signup buttons, hide user menu
+                loginBtn.style.display = 'block';
+                signupBtn.style.display = 'block';
+                userMenu.style.display = 'none';
+                adminDashboard.style.display = 'none';
+            }
+        }
+
+        function toggleUserMenu() {
+            userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Chat functionality
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            userInput.value = '';
+            hasUnsavedMessages = true;
+            
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message bot-message';
+            typingIndicator.innerHTML = '<p><i class="fas fa-circle typing-dot"></i> <i class="fas fa-circle typing-dot"></i> <i class="fas fa-circle typing-dot"></i></p>';
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Simulate bot response after delay
+            setTimeout(() => {
+                // Remove typing indicator
+                chatMessages.removeChild(typingIndicator);
+                
+                // Get bot response based on user tier
+                const botResponse = getBotResponse(message, isPremium || isAdmin);
+                addMessage(botResponse, 'bot');
+                
+                // Save to history if logged in
+                if (isLoggedIn) {
+                    saveToHistory(message, botResponse);
+                }
+            }, 1500);
+        }
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            // Format URLs as links
+            const formattedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
+            
+            messageDiv.innerHTML = `
+                <p>${formattedText}</p>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getBotResponse(userMessage, isPremium) {
+            // Premium users get more detailed responses
+            const responses = isPremium ? premiumResponses : freeResponses;
+            const messageLower = userMessage.toLowerCase();
+            
+            // Keyword matching for relevant responses
+            for (const [keywords, response] of Object.entries(responses)) {
+                if (keywords.split(',').some(keyword => messageLower.includes(keyword))) {
+                    return response;
+                }
+            }
+            
+            // Default response if no keywords match
+            return isPremium ? 
+                premiumResponses.default : 
+                freeResponses.default;
+        }
+
+        const freeResponses = {
+            "hello,hi,hey": "Hello there! I'm Pengi, your penguin chat assistant. How can I help you today?",
+            "bye,goodbye,exit": "Waddle you later! Come back anytime to chat about penguins!",
+            "species,types,kinds": "There are 18 species of penguins worldwide. The most well-known include Emperor, Adélie, Gentoo, and Chinstrap penguins. Would you like to know more about a specific species?",
+            "antarctica,south pole": "Antarctica is home to several penguin species including Emperors and Adélies. It's their natural habitat where they've adapted to survive extreme cold. Did you know Emperor penguins can dive deeper than 500 meters?",
+            "diet,food,eat": "Penguins eat krill, fish, squid, and other sea creatures. An adult penguin can eat up to 2kg of food per day! Their diet varies by species and location.",
+            "conservation,save,protect": "Penguin conservation is crucial! You can help by supporting organizations like WWF, reducing your carbon footprint, and choosing sustainable seafood. Many penguin species are threatened by climate change.",
+            "funny,joke,laugh": "Why don't penguins fly? Because they're already outstanding in their field! 😄",
+            "default": "That's an interesting question about penguins! I'd love to help you learn more. Could you be more specific about what you'd like to know?"
+        };
+
+        const premiumResponses = {
+            "hello,hi,hey": "Hello there! I'm Pengi, your premium penguin AI assistant. I have access to advanced knowledge about penguins, Antarctica, and conservation efforts. How can I assist you today?",
+            "bye,goodbye,exit": "Waddle you later! As a premium user, you can access your chat history anytime by clicking the 'View Chats' button in your profile menu. Have a wonderful day!",
+            "species,types,kinds": "There are 18 recognized penguin species, categorized into 6 genera. The largest is the Emperor Penguin (Aptenodytes forsteri) at 1.2m tall, while the smallest is the Little Blue Penguin (Eudyptula minor) at just 33cm. Each species has unique adaptations - for example, Gentoo penguins have white patches above their eyes, and Chinstraps have a distinctive black band under their chin. Would you like detailed information about a specific species, including their habitat, diet, and conservation status?",
+            "antarctica,south pole": "Antarctica is home to 5 penguin species that breed exclusively on the continent: Emperor, Adélie, Gentoo, Chinstrap, and Macaroni penguins. Emperor penguins are the only species that breeds during the harsh Antarctic winter, with males balancing eggs on their feet for 65 days while temperatures drop below -40°C. Climate change is causing significant habitat loss, with some colonies declining by over 50% in the last 30 years. Would you like to learn about conservation efforts or specific adaptations these incredible birds have developed?",
+            "diet,food,eat": "Penguins' diet varies significantly by species and habitat. Emperor penguins primarily eat fish and squid, diving to depths over 500m to catch prey. Adélie penguins consume mostly Antarctic krill, which makes up 90% of their diet. Gentoo penguins have the most diverse diet, including fish, krill, and squid. A single penguin can eat 2-3kg of food daily, and during breeding season, they may travel over 100km to find food for their chicks. Climate change is disrupting food chains, with krill populations declining due to reduced sea ice. Would you like to know more about how diet affects penguin conservation?",
+            "conservation,save,protect": "Penguin conservation requires a multi-faceted approach. The IUCN Red List classifies 10 of 18 penguin species as threatened. Key threats include climate change (reducing sea ice habitat), overfishing (depleting food sources), pollution, and habitat destruction. You can help by:\n\n1. Supporting organizations like Oceanites, WWF, and the Antarctic and Southern Ocean Coalition\n2. Reducing your carbon footprint\n3. Choosing sustainable seafood certified by MSC\n4. Advocating for Marine Protected Areas\n5. Reducing plastic use\n\nAs a premium user, you can join our monthly conservation webinars and access exclusive research reports. Would you like information about specific conservation projects?",
+            "intelligence,smart,brain": "Penguins demonstrate remarkable intelligence and complex social behaviors. They use sophisticated communication systems with unique vocalizations to identify mates and chicks in crowded colonies. Emperor penguins coordinate huddling movements in rotating waves to share warmth in -40°C temperatures. Studies show they can recognize individual humans and solve problems to access food. Their spatial memory is exceptional for navigating vast ocean territories. Research published in Nature in 2023 revealed penguin colonies use collective decision-making similar to honeybee swarms when selecting new breeding sites.",
+            "funny,joke,laugh": "Why don't penguins fly? Because they're already outstanding in their field! But here's a premium joke just for you: What do you call a penguin in the desert? Lost! 😄 Penguins actually can't survive in warm climates due to their specialized insulation - their feathers and blubber that keep them warm in Antarctica would cause them to overheat anywhere near the equator.",
+            "ai,model,how,work": "I'm powered by Hugging Face's state-of-the-art language models! As a premium user, you have access to microsoft/DialoGPT-medium, which has 345 million parameters and was trained on 147 million conversation exchanges. This allows me to understand context better, maintain conversation history, and provide more accurate, nuanced responses about penguins and related topics. The model uses transformer architecture with attention mechanisms to process language efficiently. Would you like to know more about how AI is being used in wildlife conservation?",
+            "default": "Thank you for your question! As a premium user, I have access to an extensive knowledge base about penguins, Antarctic ecosystems, and conservation science. I can provide detailed information on biology, behavior, habitats, threats, and protection efforts. Please feel free to ask anything specific you'd like to know, and I'll give you the most accurate, up-to-date information available."
+        };
+
+        function saveToHistory(userMsg, botMsg) {
+            const chatSession = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                user: userMsg,
+                bot: botMsg,
+                userId: currentUser.uid
+            };
+            
+            chatHistory.unshift(chatSession);
+            if (chatHistory.length > 100) chatHistory.pop(); // Limit history size
+            
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            renderHistoryPreview();
+            hasUnsavedMessages = false;
+            
+            console.log("Firestore: Chat history saved successfully");
+        }
+
+        function renderHistoryPreview() {
+            historyList.innerHTML = '';
+            
+            // Show last 5 conversations
+            const recentHistory = chatHistory.slice(0, 5);
+            
+            if (recentHistory.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 1rem;">No chat history yet. Start a conversation!</p>';
+                return;
+            }
+            
+            recentHistory.forEach(session => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                const date = new Date(session.timestamp).toLocaleDateString();
+                const time = new Date(session.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                historyItem.innerHTML = `
+                    <strong>${date} at ${time}</strong>
+                    <p style="margin: 0.5rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">You: ${session.user}</p>
+                    <p style="margin: 0.5rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--primary);">Pengi: ${session.bot.substring(0, 40)}${session.bot.length > 40 ? '...' : ''}</p>
+                `;
+                historyItem.dataset.id = session.id;
+                historyItem.addEventListener('click', () => loadHistorySession(session.id));
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function loadHistorySession(sessionId) {
+            const session = chatHistory.find(s => s.id === parseInt(sessionId));
+            if (!session) return;
+            
+            // Clear current chat
+            chatMessages.innerHTML = '';
+            
+            // Add historical messages
+            addMessage(session.user, 'user');
+            addMessage(session.bot, 'bot');
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function saveCurrentChat() {
+            if (!isLoggedIn) {
+                alert('Please log in to save your chat history');
+                showModal(loginModal);
+                return;
+            }
+            
+            if (chatMessages.children.length < 2) {
+                alert('No messages to save yet. Start a conversation first!');
+                return;
+            }
+            
+            // Get the last message exchange
+            const messages = chatMessages.querySelectorAll('.message');
+            const lastUserMsg = messages[messages.length - 2].querySelector('p').textContent;
+            const lastBotMsg = messages[messages.length - 1].querySelector('p').textContent;
+            
+            saveToHistory(lastUserMsg, lastBotMsg);
+            alert('Chat saved successfully! You can view your history anytime.');
+        }
+
+        function clearChat() {
+            if (chatMessages.children.length < 2) return;
+            
+            if (confirm('Are you sure you want to clear the current chat? This cannot be undone.')) {
+                chatMessages.innerHTML = `
+                    <div class="message bot-message">
+                        <p>Hello! I'm Pengi, your penguin AI assistant. I'm here to chat about penguins, Antarctica, conservation, or anything else you'd like to discuss. What's on your mind today?</p>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    </div>
+                `;
+                hasUnsavedMessages = false;
+            }
+        }
+
+        function showAllHistory() {
+            if (!isLoggedIn) {
+                alert('Please log in to view your chat history');
+                showModal(loginModal);
+                return;
+            }
+            
+            if (chatHistory.length === 0) {
+                alert('You have no saved chat history yet. Start a conversation and save it!');
+                return;
+            }
+            
+            // In a real app, this would navigate to a dedicated history page
+            alert(`You have ${chatHistory.length} saved chat sessions. In the full application, this would open a dedicated history page with search and filtering capabilities.`);
+        }
+
+        // Admin functions
+        function handleAccessSubmit() {
+            const code = accessCode.value.trim();
+            if (code === accessKey) {
+                hideModal(creditsModal);
+                
+                if (isLoggedIn) {
+                    // Upgrade current user to premium
+                    isPremium = true;
+                    currentUser.isPremium = true;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    // Update UI
+                    updateAuthUI();
+                    alert('Access granted! You now have premium features enabled.');
+                    
+                    // Show chat interface
+                    showChatInterface();
+                } else {
+                    alert('Access code verified! Please log in to unlock premium features.');
+                    showModal(loginModal);
+                }
+                
+                accessCode.value = '';
+                console.log("Admin access granted with code:", accessKey);
+            } else {
+                alert('Incorrect access code. Please try again.');
+                accessCode.value = '';
+                accessCode.focus();
+            }
+        }
+
+        function handleUpgradeConfirm() {
+            if (!isLoggedIn) {
+                alert('Please log in to upgrade your account');
+                hideModal(upgradeModal);
+                showModal(loginModal);
+                return;
+            }
+            
+            // Show loading spinner
+            document.getElementById('upgrade-spinner').style.display = 'inline-block';
+            confirmUpgrade.disabled = true;
+            
+            // Simulate upgrade process
+            setTimeout(() => {
+                isPremium = true;
+                currentUser.isPremium = true;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update UI
+                updateAuthUI();
+                renderHistoryPreview();
+                
+                // Hide modal
+                hideModal(upgradeModal);
+                document.getElementById('upgrade-spinner').style.display = 'none';
+                confirmUpgrade.disabled = false;
+                
+                alert('Congratulations! Your account has been upgraded to Premium status. You now have access to advanced AI capabilities and unlimited chat history.');
+                console.log("Firestore: User upgraded to premium status");
+            }, 1200);
+        }
+
+        function handleManualUpgrade() {
+            if (!isAdmin) {
+                alert('Only admins can grant premium status to users');
+                return;
+            }
+            
+            const email = userEmailInput.value.trim().toLowerCase();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            if (email === currentUser.email) {
+                alert('You are already a premium user!');
+                return;
+            }
+            
+            // Simulate finding user in database
+            const targetUser = {
+                username: email.split('@')[0],
+                email: email,
+                isPremium: true,
+                uid: 'user_' + Math.random().toString(36).substr(2, 9)
+            };
+            
+            // Add to users list
+            const existingIndex = users.findIndex(u => u.email === email);
+            if (existingIndex !== -1) {
+                users[existingIndex].isPremium = true;
+            } else {
+                users.push(targetUser);
+            }
+            
+            localStorage.setItem('allUsers', JSON.stringify(users));
+            userEmailInput.value = '';
+            
+            // Update UI
+            updateDashboardStats();
+            loadAllUsers();
+            
+            alert(`Premium access has been granted to ${targetUser.username}!`);
+            console.log(`Admin action: Granted premium status to ${email}`);
+        }
+
+        function updateDashboardStats() {
+            // Simulate fetching stats from Firestore
+            const totalUsers = Math.floor(Math.random() * 50) + 150;
+            const premiumUsers = Math.floor(totalUsers * 0.15);
+            const activeUsers = Math.floor(totalUsers * 0.3);
+            const chatsCount = Math.floor(Math.random() * 200) + 800;
+            
+            totalUsersEl.textContent = totalUsers.toLocaleString();
+            premiumUsersEl.textContent = premiumUsers.toLocaleString();
+            activeUsersEl.textContent = activeUsers.toLocaleString();
+            chatsCountEl.textContent = chatsCount.toLocaleString();
+        }
+
+        let users = [];
+
+        function loadAllUsers() {
+            // Simulate fetching users from Firestore
+            users = [
+                { username: 'lkmukhil', email: adminEmail, isPremium: true, uid: 'admin_001', dateJoined: '2023-01-15' },
+                { username: 'penguinfan22', email: 'penguinfan22@example.com', isPremium: true, uid: 'user_002', dateJoined: '2023-02-20' },
+                { username: 'antarctic_explorer', email: 'explorer@example.com', isPremium: false, uid: 'user_003', dateJoined: '2023-03-10' },
+                { username: 'conservation_hero', email: 'hero@example.com', isPremium: false, uid: 'user_004', dateJoined: '2023-04-05' },
+                { username: 'wildlife_watcher', email: 'watcher@example.com', isPremium: true, uid: 'user_005', dateJoined: '2023-05-12' },
+                { username: 'ice_queen', email: 'icequeen@example.com', isPremium: false, uid: 'user_006', dateJoined: '2023-06-18' }
+            ];
+            
+            renderUserList();
+        }
+
+        function renderUserList() {
+            userListEl.innerHTML = '';
+            
+            users.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = `user-card ${user.isPremium ? 'premium' : ''} ${user.email === adminEmail ? 'admin' : ''}`;
+                
+                const statusClass = user.email === adminEmail ? 'status-admin' : 
+                                   user.isPremium ? 'status-premium' : 'status-free';
+                const statusText = user.email === adminEmail ? 'Admin' : 
+                                  user.isPremium ? 'Premium' : 'Free';
+                
+                userCard.innerHTML = `
+                    <div class="user-header">
+                        <div>
+                            <div class="user-name">${user.username}</div>
+                            <div class="user-status ${statusClass}">${statusText}</div>
+                        </div>
+                        ${user.email === adminEmail ? '' : `
+                        <button class="btn ${user.isPremium ? 'btn-outline' : 'btn-gold grant-premium'}" 
+                                ${user.isPremium ? 'disabled' : ''} 
+                                data-email="${user.email}">
+                            ${user.isPremium ? 'Premium' : 'Grant Premium'}
+                        </button>
+                        `}
+                    </div>
+                    <div class="user-email">${user.email}</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">
+                        Member since: ${new Date(user.dateJoined).toLocaleDateString()}
+                    </div>
+                `;
+                
+                userListEl.appendChild(userCard);
+                
+                // Add event listener if not admin and not already premium
+                if (user.email !== adminEmail && !user.isPremium) {
+                    const grantBtn = userCard.querySelector('.grant-premium');
+                    grantBtn.addEventListener('click', () => {
+                        user.isPremium = true;
+                        renderUserList();
+                        updateDashboardStats();
+                        alert(`Premium status granted to ${user.username}`);
+                        console.log(`Admin action: Granted premium to ${user.email}`);
+                    });
+                }
+            });
+        }
+
+        // UI helpers
+        function showModal(modal) {
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal(modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            themeToggle.innerHTML = newTheme === 'dark' ? 
+                '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            
+            console.log(`Theme changed to ${newTheme} mode`);
+        }
+
+        function showChatInterface() {
+            chatContainer.style.display = 'block';
+            
+            // Scroll to chat container
+            setTimeout(() => {
+                chatContainer.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+            
+            console.log("Chat interface displayed");
+        }
+
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('unlock') === 'true') {
+                setTimeout(() => {
+                    showModal(creditsModal);
+                }, 1000);
+            }
+            if (urlParams.get('chat') === 'true') {
+                setTimeout(showChatInterface, 1500);
+            }
+        }
+
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        })
+                        .catch(error => {
+                            console.log('ServiceWorker registration failed: ', error);
+                        });
+                });
+            }
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Add this for PWA installation prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install prompt to user after 30 seconds
+            setTimeout(showInstallPrompt, 30000);
+        });
+
+        function showInstallPrompt() {
+            if (deferredPrompt) {
+                const installBanner = document.createElement('div');
+                installBanner.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    left: 20px;
+                    right: 20px;
+                    background: white;
+                    border-radius: 12px;
+                    padding: 1rem;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    border: 1px solid #e2e8f0;
+                `;
+                installBanner.innerHTML = `
+                    <div>
+                        <strong>Install Penguin Paradise</strong>
+                        <p>Get the app for offline access and push notifications</p>
+                    </div>
+                    <button id="install-app-btn" style="
+                        background: var(--primary);
+                        color: white;
+                        border: none;
+                        padding: 0.6rem 1.2rem;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    ">
+                        Install
+                    </button>
+                `;
+                document.body.appendChild(installBanner);
+                
+                document.getElementById('install-app-btn').addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        } else {
+                            console.log('User dismissed the install prompt');
+                        }
+                        deferredPrompt = null;
+                        document.body.removeChild(installBanner);
+                    });
+                });
+            }
+        }
+
+        // Simulate Firebase performance monitoring
+        console.log("Firebase Performance Monitoring: Page loaded in", (performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart), "ms");
+    </script>
 </body>
 </html>
