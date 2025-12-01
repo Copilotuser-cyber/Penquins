@@ -1,1854 +1,752 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Penguin Paradise - Discover amazing penguin facts while enjoying AI chat capabilities">
-    <title>Penguin Paradise | AI Chat Experience</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-    <meta name="theme-color" content="#1a5fb4">
-    <style>
-        :root {
-            --primary: #1a5fb4;
-            --secondary: #2a7f3f;
-            --accent: #ff6b6b;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gold: #d4af37;
-            --ice: #e6f7ff;
-            --snow: #f0f8ff;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --border-radius-sm: 8px;
-            --border-radius-md: 16px;
-            --border-radius-lg: 24px;
-        }
-        
-        [data-theme="dark"] {
-            --light: #121212;
-            --dark: #f8f9fa;
-            --ice: #0a1929;
-            --snow: #0d1b2a;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html {
-            scroll-behavior: smooth;
-            font-size: 16px;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-            line-height: 1.6;
-            color: var(--dark);
-            background: linear-gradient(135deg, var(--snow) 0%, var(--ice) 100%);
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-            transition: var(--transition);
-        }
-        
-        [data-theme="dark"] body {
-            background: linear-gradient(135deg, #0a0e17 0%, #0d1b2a 100%);
-        }
-        
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(26, 95, 180, 0.03) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(42, 127, 63, 0.03) 0%, transparent 20%);
-            z-index: -1;
-            pointer-events: none;
-        }
-        
-        .container {
-            width: 95%;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        /* Header & Navigation */
-        header {
-            background: rgba(26, 95, 180, 0.95);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            transition: var(--transition);
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.8rem;
-            font-weight: 800;
-            text-decoration: none;
-            color: white;
-            transition: var(--transition);
-        }
-        
-        .logo:hover {
-            transform: scale(1.03);
-        }
-        
-        .logo i {
-            font-size: 2.4rem;
-            background: linear-gradient(45deg, #ffde59, #ff914d);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 1.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        nav a {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.05rem;
-            padding: 5px 10px;
-            border-radius: 8px;
-            transition: var(--transition);
-            position: relative;
-        }
-        
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 3px;
-            background: var(--gold);
-            border-radius: 3px;
-            transition: var(--transition);
-        }
-        
-        nav a:hover, nav a.active {
-            color: white;
-        }
-        
-        nav a:hover::after {
-            width: 100%;
-        }
-        
-        .auth-controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            color: white;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: rotate(30deg);
-        }
-        
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.8rem;
-            cursor: pointer;
-        }
-        
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 5rem 0 3rem;
-            background: linear-gradient(rgba(10, 30, 60, 0.85), rgba(13, 27, 42, 0.85)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%230a1e3d"/><circle cx="20" cy="20" r="3" fill="%231a5fb4" opacity="0.3"/><circle cx="65" cy="35" r="5" fill="%231a5fb4" opacity="0.2"/><circle cx="40" cy="75" r="4" fill="%231a5fb4" opacity="0.25"/><circle cx="85" cy="60" r="2" fill="%231a5fb4" opacity="0.15"/></svg>');
-            background-size: cover;
-            color: white;
-            border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
-            margin-bottom: 3rem;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .hero::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.08" d="M0,64L48,80C96,96,192,128,288,122.7C384,117,480,75,576,64C672,53,768,75,864,106.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
-            background-size: cover;
-            background-position: bottom;
-            z-index: 1;
-        }
-        
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .hero h1 {
-            font-size: 4.2rem;
-            margin-bottom: 1.2rem;
-            text-shadow: 0 3px 10px rgba(0,0,0,0.3);
-            background: linear-gradient(to right, #ffffff, #a0d2ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            line-height: 1.1;
-        }
-        
-        .hero p {
-            font-size: 1.65rem;
-            margin: 0 auto 2rem;
-            max-width: 800px;
-            opacity: 0.95;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .hero-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1.2rem;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-        }
-        
-        /* Main Content Sections */
-        .section {
-            padding: 4rem 0;
-        }
-        
-        .section-title {
-            text-align: center;
-            font-size: 2.8rem;
-            margin-bottom: 3rem;
-            color: var(--primary);
-            position: relative;
-        }
-        
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--gold);
-            border-radius: 2px;
-        }
-        
-        /* Features Grid */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-        
-        .card {
-            background: white;
-            border-radius: var(--border-radius-md);
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-            transition: var(--transition);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        
-        [data-theme="dark"] .card {
-            background: #1e293b;
-        }
-        
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .card-img {
-            height: 220px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .card-img::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            transform: rotate(30deg);
-        }
-        
-        .card-content {
-            padding: 1.8rem;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .card h3 {
-            color: var(--primary);
-            margin-bottom: 0.8rem;
-            font-size: 1.7rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        [data-theme="dark"] .card h3 {
-            color: #94a3b8;
-        }
-        
-        .card p {
-            margin-bottom: 1.5rem;
-            flex-grow: 1;
-            color: var(--dark);
-        }
-        
-        [data-theme="dark"] .card p {
-            color: #cbd5e1;
-        }
-        
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        /* Gallery */
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.8rem;
-            margin: 3rem 0;
-        }
-        
-        .gallery-item {
-            border-radius: var(--border-radius-md);
-            overflow: hidden;
-            height: 320px;
-            position: relative;
-            box-shadow: var(--shadow-md);
-            cursor: pointer;
-            transition: var(--transition);
-            background: var(--ice);
-        }
-        
-        [data-theme="dark"] .gallery-item {
-            background: #1e293b;
-        }
-        
-        .gallery-item:hover {
-            transform: scale(1.03);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .gallery-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: var(--transition);
-        }
-        
-        .gallery-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            color: white;
-            padding: 1.5rem;
-            transform: translateY(20px);
-            transition: var(--transition);
-            opacity: 0;
-        }
-        
-        .gallery-item:hover .gallery-overlay {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .gallery-overlay h3 {
-            font-size: 1.6rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        /* Facts Section */
-        .facts {
-            background: linear-gradient(135deg, rgba(26, 95, 180, 0.08), rgba(42, 127, 63, 0.08));
-            border-radius: var(--border-radius-lg);
-            padding: 3rem;
-            margin: 4rem 0;
-            box-shadow: var(--shadow-md);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        [data-theme="dark"] .facts {
-            background: linear-gradient(135deg, rgba(30, 64, 126, 0.15), rgba(42, 100, 70, 0.15));
-        }
-        
-        .facts::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(26, 95, 180, 0.08) 0%, transparent 70%);
-            z-index: 0;
-        }
-        
-        .facts-content {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .fact-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-        
-        .fact-item {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 1.8rem;
-            border-radius: var(--border-radius-md);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            border: 1px solid rgba(26, 95, 180, 0.1);
-        }
-        
-        [data-theme="dark"] .fact-item {
-            background: rgba(30, 41, 59, 0.7);
-            border-color: rgba(26, 95, 180, 0.3);
-        }
-        
-        .fact-item:hover {
-            transform: translateX(8px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--primary);
-        }
-        
-        .fact-icon {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-        
-        .fact-item h3 {
-            color: var(--primary);
-            margin-bottom: 0.8rem;
-            font-size: 1.6rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        /* Chat Interface */
-        .chat-container {
-            display: none;
-            background: white;
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-lg);
-            margin: 2rem 0;
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        [data-theme="dark"] .chat-container {
-            background: #1e293b;
-        }
-        
-        .chat-container::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
-        
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.8rem;
-            flex-wrap: wrap;
-            gap: 1.2rem;
-            padding-bottom: 1.2rem;
-            border-bottom: 2px solid var(--ice);
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .user-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, var(--primary), #1e3a8a);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1.8rem;
-            flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(26, 95, 180, 0.4);
-        }
-        
-        .user-details h2 {
-            font-size: 1.8rem;
-            margin-bottom: 0.3rem;
-        }
-        
-        .user-details .premium-badge {
-            display: inline-block;
-            background: var(--gold);
-            color: var(--dark);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-        
-        .user-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-        
-        .chat-controls {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .premium-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: var(--gold);
-        }
-        
-        .chat-messages {
-            height: 500px;
-            max-height: 70vh;
-            overflow-y: auto;
-            border-radius: var(--border-radius-md);
-            padding: 1.5rem;
-            margin-bottom: 1.8rem;
-            background: var(--ice);
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-            scroll-behavior: smooth;
-        }
-        
-        [data-theme="dark"] .chat-messages {
-            background: #0f172a;
-        }
-        
-        .message {
-            max-width: 85%;
-            padding: 1.2rem 1.5rem;
-            border-radius: 1.8rem;
-            position: relative;
-            animation: fadeIn 0.4s ease;
-            box-shadow: var(--shadow-sm);
-            line-height: 1.5;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .user-message {
-            background: linear-gradient(45deg, var(--primary), #0d4a8b);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 0.5rem;
-        }
-        
-        .bot-message {
-            background: white;
-            border: 1px solid #e2e8f0;
-            align-self: flex-start;
-            border-bottom-left-radius: 0.5rem;
-        }
-        
-        [data-theme="dark"] .bot-message {
-            background: #334155;
-            border-color: #475569;
-            color: #f1f5f9;
-        }
-        
-        .message-time {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            margin-top: 0.5rem;
-            text-align: right;
-        }
-        
-        .chat-input-container {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .chat-input {
-            flex: 1;
-            position: relative;
-        }
-        
-        .chat-input input {
-            width: 100%;
-            padding: 1rem 1.5rem 1rem 4rem;
-            border: 2px solid #cbd5e1;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            transition: var(--transition);
-            background: white;
-        }
-        
-        [data-theme="dark"] .chat-input input {
-            background: #334155;
-            border-color: #475569;
-            color: white;
-        }
-        
-        .chat-input input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.3);
-        }
-        
-        .chat-input i {
-            position: absolute;
-            left: 1.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary);
-            font-size: 1.2rem;
-        }
-        
-        .send-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 4px 15px rgba(26, 95, 180, 0.4);
-        }
-        
-        .send-btn:hover {
-            background: #0d4a8b;
-            transform: scale(1.08);
-        }
-        
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .history-container {
-            margin-top: 2.5rem;
-            background: var(--ice);
-            border-radius: var(--border-radius-md);
-            padding: 1.8rem;
-        }
-        
-        [data-theme="dark"] .history-container {
-            background: #1e293b;
-        }
-        
-        .history-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.8rem;
-            border-bottom: 2px solid rgba(26, 95, 180, 0.2);
-        }
-        
-        .history-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.2rem;
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        .history-item {
-            background: white;
-            padding: 1.2rem;
-            border-radius: var(--border-radius-sm);
-            cursor: pointer;
-            transition: var(--transition);
-            border-left: 4px solid var(--primary);
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        [data-theme="dark"] .history-item {
-            background: #334155;
-        }
-        
-        .history-item:hover {
-            transform: translateX(5px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .history-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--primary);
-            transition: var(--transition);
-        }
-        
-        .history-item:hover::before {
-            width: 8px;
-        }
-        
-        .history-date {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-top: 0.4rem;
-        }
-        
-        /* Animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(26, 95, 180, 0.4); }
-            70% { box-shadow: 0 0 0 12px rgba(26, 95, 180, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(26, 95, 180, 0); }
-        }
-        
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        /* Modals */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .modal.show {
-            opacity: 1;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: var(--border-radius-lg);
-            width: 90%;
-            max-width: 550px;
-            padding: 2.5rem;
-            text-align: center;
-            box-shadow: var(--shadow-lg);
-            position: relative;
-            transform: translateY(30px);
-            transition: transform 0.4s ease;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        [data-theme="dark"] .modal-content {
-            background: #1e293b;
-        }
-        
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-        
-        .close-modal {
-            position: absolute;
-            top: 1.2rem;
-            right: 1.5rem;
-            font-size: 1.8rem;
-            color: #64748b;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .close-modal:hover {
-            color: var(--primary);
-            background: rgba(26, 95, 180, 0.1);
-        }
-        
-        .modal h2 {
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-            font-size: 2.2rem;
-        }
-        
-        [data-theme="dark"] .modal h2 {
-            color: #94a3b8;
-        }
-        
-        .modal p {
-            margin-bottom: 1.8rem;
-            font-size: 1.1rem;
-            line-height: 1.7;
-        }
-        
-        .modal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-            margin: 1.5rem 0;
-        }
-        
-        .auth-container {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        #firebaseui-auth-container {
-            width: 100%;
-        }
-        
-        .modal-input {
-            width: 100%;
-            padding: 1rem 1.4rem;
-            border: 2px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            transition: var(--transition);
-        }
-        
-        [data-theme="dark"] .modal-input {
-            background: #334155;
-            border-color: #475569;
-            color: white;
-        }
-        
-        .modal-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.3);
-        }
-        
-        .modal-btns {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        /* Buttons */
-        .btn {
-            display: inline-block;
-            background: var(--primary);
-            color: white;
-            padding: 0.9rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: var(--transition);
-            border: 2px solid var(--primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex-shrink: 0;
-            box-shadow: 0 4px 15px rgba(26, 95, 180, 0.4);
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(26, 95, 180, 0.6);
-        }
-        
-        .btn:active {
-            transform: translateY(1px);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-        }
-        
-        .btn-outline:hover {
-            background: rgba(26, 95, 180, 0.1);
-        }
-        
-        .btn-secondary {
-            background: var(--secondary);
-            border-color: var(--secondary);
-            box-shadow: 0 4px 15px rgba(42, 127, 63, 0.4);
-        }
-        
-        .btn-secondary:hover {
-            box-shadow: 0 6px 20px rgba(42, 127, 63, 0.6);
-        }
-        
-        .btn-gold {
-            background: var(--gold);
-            color: var(--dark);
-            border-color: var(--gold);
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-        }
-        
-        .btn-gold:hover {
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
-        }
-        
-        .btn-danger {
-            background: #ef4444;
-            border-color: #ef4444;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-        }
-        
-        .btn-danger:hover {
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
-        }
-        
-        /* Footer */
-        footer {
-            background: linear-gradient(to right, var(--dark), #1e293b);
-            color: rgba(255, 255, 255, 0.85);
-            text-align: center;
-            padding: 3rem 0 2rem;
-            margin-top: 4rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        footer::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--gold));
-        }
-        
-        .footer-content {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        .footer-logo {
-            font-size: 2.2rem;
-            margin-bottom: 1rem;
-            color: white;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin: 1.5rem 0;
-            flex-wrap: wrap;
-        }
-        
-        .footer-links a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: var(--transition);
-            font-weight: 500;
-        }
-        
-        .footer-links a:hover {
-            color: var(--gold);
-        }
-        
-        .credits-link {
-            display: inline-block;
-            margin-top: 1rem;
-            color: var(--gold);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            cursor: pointer;
-            background: rgba(212, 175, 55, 0.1);
-            padding: 0.4rem 1rem;
-            border-radius: 30px;
-        }
-        
-        .credits-link:hover {
-            background: rgba(212, 175, 55, 0.2);
-            transform: scale(1.05);
-        }
-        
-        .copyright {
-            margin-top: 1.5rem;
-            font-size: 0.95rem;
-            opacity: 0.8;
-        }
-        
-        /* Loading Animation */
-        .loading {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-        
-        .loading-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .hero h1 {
-                font-size: 3.5rem;
-            }
-            
-            .hero p {
-                font-size: 1.4rem;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            nav ul {
-                display: none;
-                width: 100%;
-                flex-direction: column;
-                gap: 0;
-                margin-top: 1rem;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                background: rgba(26, 95, 180, 0.98);
-                padding: 1.5rem;
-                box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-                z-index: 100;
-            }
-            
-            nav ul.show {
-                display: flex;
-            }
-            
-            nav a {
-                padding: 0.8rem 0;
-                font-size: 1.2rem;
-                display: block;
-            }
-            
-            .hero h1 {
-                font-size: 2.8rem;
-            }
-            
-            .hero p {
-                font-size: 1.2rem;
-            }
-            
-            .hero-buttons {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .section-title {
-                font-size: 2.3rem;
-            }
-            
-            .chat-messages {
-                height: 400px;
-            }
-            
-            .modal-content {
-                padding: 1.8rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2.3rem;
-            }
-            
-            .hero p {
-                font-size: 1.1rem;
-            }
-            
-            .section {
-                padding: 2.5rem 0;
-            }
-            
-            .section-title {
-                font-size: 2rem;
-            }
-            
-            .card-img {
-                height: 180px;
-            }
-            
-            .card h3 {
-                font-size: 1.4rem;
-            }
-            
-            .gallery-item {
-                height: 250px;
-            }
-            
-            .chat-messages {
-                height: 350px;
-            }
-            
-            .user-icon {
-                width: 45px;
-                height: 45px;
-                font-size: 1.4rem;
-            }
-            
-            .chat-input input {
-                padding: 0.9rem 1.2rem 0.9rem 3.5rem;
-                font-size: 1rem;
-            }
-            
-            .send-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 1.3rem;
-            }
-            
-            .modal-content {
-                width: 95%;
-                padding: 1.5rem;
-            }
-        }
-        
-        /* Network status indicator */
-        .network-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            background: #ef4444;
-            color: white;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            z-index: 9999;
-            display: none;
-        }
-        
-        /* Toast notifications */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            color: var(--dark);
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow-lg);
-            z-index: 9999;
-            transform: translateX(120%);
-            transition: transform 0.3s ease;
-            border-left: 4px solid var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .toast.show {
-            transform: translateX(0);
-        }
-        
-        .toast.success {
-            border-left-color: var(--secondary);
-        }
-        
-        .toast.error {
-            border-left-color: #ef4444;
-        }
-        
-        .toast-close {
-            margin-left: 1rem;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        /* Fallback auth styles */
-        .fallback-auth {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        .auth-option {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        [data-theme="dark"] .auth-option {
-            background: #334155;
-            border-color: #475569;
-        }
-        
-        .auth-option:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-        
-        .google-icon {
-            width: 24px;
-            height: 24px;
-            background: #db4437;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .email-icon {
-            width: 24px;
-            height: 24px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-        
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 1.5rem 0;
-        }
-        
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #cbd5e1;
-        }
-        
-        .divider span {
-            padding: 0 10px;
-            color: #64748b;
-        }
-        
-        .error-message {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
-            padding: 0.8rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            text-align: left;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Penguin Paradise | Your Antarctic Companion</title>
+  <meta name="description" content="Discover penguins, their habitats, species, and conservation. A beautiful resource for penguin lovers.">
+
+  <!-- Firebase SDKs (CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-yycv9QnZkS8DQqfK+1i7J9V5qZ8Xh8qX2q3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3Z1aZbY5d1dQb4Q1b1i1XQa3a8X5d1d3......" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <style>
+    :root {
+      --primary: #0d4a6b;
+      --secondary: #2e7d32;
+      --accent: #d32f2f;
+      --bg: #e3f2fd;
+      --card: #ffffff;
+      --text: #1a237e;
+      --gold: #ffd700;
+      --footer-bg: #0a2e4d;
+      --shadow: 0 4px 12px rgba(0,0,0,0.1);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+
+    /* Header */
+    header {
+      background: var(--footer-bg);
+      color: white;
+      padding: 1rem 0;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo i {
+      color: var(--gold);
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    nav a {
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    nav a:hover {
+      background: rgba(255,255,255,0.15);
+      color: white;
+    }
+
+    .auth-section {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 9px 18px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid white;
+      color: white;
+    }
+
+    .btn-primary {
+      background: #4fc3f7;
+      color: var(--footer-bg);
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .premium-badge {
+      color: var(--gold);
+      font-weight: bold;
+      text-shadow: 0 0 6px rgba(255,215,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Main Content */
+    main {
+      padding: 2.5rem 0;
+    }
+
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1543507480-47292485e591?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80');
+      background-size: cover;
+      background-position: center;
+      height: 450px;
+      border-radius: 18px;
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+    }
+
+    .hero-content {
+      max-width: 800px;
+      padding: 0 20px;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 1.2rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+    }
+
+    .hero p {
+      font-size: 1.3rem;
+      margin-bottom: 2rem;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    /* Features */
+    .section-title {
+      text-align: center;
+      margin: 2.5rem 0 1.8rem;
+      color: var(--primary);
+      font-size: 2rem;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: var(--secondary);
+      margin: 10px auto 0;
+      border-radius: 2px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .feature-icon {
+      height: 180px;
+      background: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 4rem;
+    }
+
+    .feature-content {
+      padding: 1.8rem;
+    }
+
+    .feature-content h3 {
+      margin-bottom: 0.8rem;
+      color: var(--primary);
+    }
+
+    /* Gallery */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 1.5rem;
+    }
+
+    .gallery-item {
+      height: 220px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .gallery-item img:hover {
+      transform: scale(1.05);
+    }
+
+    /* Upgrade Banner */
+    .upgrade-banner {
+      background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+      padding: 2.2rem;
+      border-radius: 16px;
+      text-align: center;
+      margin: 2.5rem 0;
+      display: none;
+      border: 2px dashed #e17055;
+    }
+
+    .upgrade-banner h2 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-size: 2rem;
+    }
+
+    .upgrade-btn {
+      background: var(--primary);
+      color: white;
+      padding: 14px 36px;
+      font-size: 1.2rem;
+      border-radius: 50px;
+      margin-top: 15px;
+    }
+
+    /* Chat UI */
+    .chat-container {
+      display: none;
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      margin: 2.5rem 0;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: var(--primary);
+      color: white;
+      padding: 1.2rem 1.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-messages {
+      height: 420px;
+      padding: 1.8rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 14px 20px;
+      border-radius: 20px;
+      line-height: 1.5;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+      background: #e3f2fd;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+
+    .bot-message {
+      background: #e8f5e9;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 0 1.8rem 1.8rem;
+      gap: 12px;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 14px 20px;
+      border: 1px solid #ddd;
+      border-radius: 50px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .chat-input input:focus {
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+    }
+
+    .chat-input button {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 0 28px;
+      border-radius: 50px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Admin Panel */
+    .admin-panel {
+      display: none;
+      background: #f0f7ff;
+      border: 2px dashed #4fc3f7;
+      border-radius: 16px;
+      padding: 2.2rem;
+      margin: 2.5rem 0;
+    }
+
+    .admin-panel h2 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 1.8rem;
+      font-size: 1.8rem;
+    }
+
+    .user-list {
+      max-height: 350px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-info span {
+      display: block;
+    }
+
+    .user-info .email {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--footer-bg);
+      color: #bbdefb;
+      padding: 3rem 0 2rem;
+      margin-top: 3rem;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      margin-bottom: 1.2rem;
+      position: relative;
+      padding-bottom: 0.5rem;
+      color: white;
+    }
+
+    .footer-section h3::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background: #4fc3f7;
+    }
+
+    .footer-section ul {
+      list-style: none;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-section a {
+      color: #90caf9;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .footer-section a:hover {
+      color: white;
+      padding-left: 5px;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid #3949ab;
+      color: #90a4ae;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.75);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 520px;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 1.2rem;
+      color: var(--primary);
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 16px;
+      margin: 20px 0;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    .modal-input:focus {
+      border-color: var(--secondary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1.1rem; }
+      .header-content { flex-direction: column; text-align: center; }
+      nav ul { justify-content: center; }
+      .auth-section { justify-content: center; width: 100%; }
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      display: none;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0,0,0,0.1);
+      border-left: 4px solid var(--secondary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="container header-content">
-            <a href="#" class="logo">
-                <i class="fas fa-igloo"></i>
-                <span>Penguin Paradise</span>
-            </a>
-            <button class="mobile-menu-btn" id="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
-            <nav>
-                <ul id="nav-menu">
-                    <li><a href="#" class="active">Home</a></li>
-                    <li><a href="#species">Species</a></li>
-                    <li><a href="#habitat">Habitat</a></li>
-                    <li><a href="#conservation">Conservation</a></li>
-                    <li><a href="#about">About</a></li>
-                </ul>
-            </nav>
-            <div class="auth-controls">
-                <button class="theme-toggle" id="theme-toggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <button class="btn" id="login-btn">Login</button>
-                <button class="btn" id="signup-btn">Sign Up</button>
-                <div id="user-menu" style="display: none;">
-                    <button class="user-icon" id="user-menu-btn">
-                        <span id="user-initial">U</span>
-                    </button>
-                    <div id="user-dropdown" class="card" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 10px; width: 250px; z-index: 1000;">
-                        <div class="card-content">
-                            <div style="text-align: center; margin-bottom: 1rem;">
-                                <div class="user-icon" style="width: 80px; height: 80px; margin: 0 auto 1rem;">
-                                    <span id="dropdown-user-initial" style="font-size: 2.5rem;">U</span>
-                                </div>
-                                <h3 id="dropdown-username">Username</h3>
-                                <div class="premium-badge" id="dropdown-premium-status">Free User</div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-                                <button class="btn btn-outline" id="view-chats-btn">
-                                    <i class="fas fa-history"></i> View Chats
-                                </button>
-                                <button class="btn btn-gold" id="upgrade-account-btn">
-                                    <i class="fas fa-crown"></i> Upgrade Account
-                                </button>
-                                <button class="btn btn-danger" id="logout-btn">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="container">
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Discover the Magical World of Penguins</h1>
-                <p>Explore Antarctica's most fascinating residents and unlock AI chat capabilities with our exclusive platform</p>
-                <div class="hero-buttons">
-                    <a href="#species" class="btn btn-outline">
-                        <i class="fas fa-paw"></i> Explore Species
-                    </a>
-                    <button class="btn btn-gold" id="unlock-chat-btn">
-                        <i class="fas fa-robot"></i> Unlock AI Chat
-                    </button>
-                </div>
-                <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
-                    <div class="floating" style="animation-delay: 0s;">
-                        <div style="background: rgba(255,255,255,0.15); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-snowflake" style="font-size: 2rem; color: white;"></i>
-                        </div>
-                    </div>
-                    <div class="floating" style="animation-delay: 1s;">
-                        <div style="background: rgba(255,255,255,0.15); width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-icicles" style="font-size: 2.5rem; color: white;"></i>
-                        </div>
-                    </div>
-                    <div class="floating" style="animation-delay: 0.5s;">
-                        <div style="background: rgba(255,255,255,0.15); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-wind" style="font-size: 1.8rem; color: white;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section" id="species">
-            <h2 class="section-title">Penguin Species</h2>
-            <div class="features">
-                <div class="card">
-                    <div class="card-img" style="background: linear-gradient(45deg, #1a5fb4, #0f4c81);">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3><i class="fas fa-info-circle"></i> Emperor Penguin</h3>
-                        <p>The largest of all penguin species, standing up to 1.2 meters tall. These magnificent birds survive the harsh Antarctic winters by huddling together in large groups to conserve warmth.</p>
-                        <div class="card-footer">
-                            <span><i class="fas fa-ruler-vertical"></i> 1.2m tall</span>
-                            <span><i class="fas fa-weight"></i> 40kg</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-img" style="background: linear-gradient(45deg, #2a7f3f, #1e5d2e);">
-                        <i class="fas fa-snowman"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3><i class="fas fa-info-circle"></i> Adélie Penguin</h3>
-                        <p>Recognizable by their distinctive white eye rings, Adélie penguins are one of the most common species in Antarctica. They build nests from small stones and are excellent swimmers.</p>
-                        <div class="card-footer">
-                            <span><i class="fas fa-ruler-vertical"></i> 70cm tall</span>
-                            <span><i class="fas fa-weight"></i> 6kg</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-img" style="background: linear-gradient(45deg, #ff6b6b, #e55a5a);">
-                        <i class="fas fa-feather"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3><i class="fas fa-info-circle"></i> Gentoo Penguin</h3>
-                        <p>Known for their bright orange-red bills and white stripe across the top of their heads. Gentoos are the fastest underwater swimming birds, reaching speeds up to 36 km/h.</p>
-                        <div class="card-footer">
-                            <span><i class="fas fa-ruler-vertical"></i> 90cm tall</span>
-                            <span><i class="fas fa-weight"></i> 8kg</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section" id="gallery">
-            <h2 class="section-title">Penguin Gallery</h2>
-            <div class="gallery">
-                <div class="gallery-item">
-                    <div style="background: linear-gradient(45deg, #1a5fb4, #0f4c81); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <h3>Emperor Penguin Colony</h3>
-                        <p>Antarctica's largest penguin species gathered for warmth</p>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <div style="background: linear-gradient(45deg, #2a7f3f, #1e5d2e); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <h3>Adélie Penguin Chicks</h3>
-                        <p>Young penguins learning to survive in harsh conditions</p>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <div style="background: linear-gradient(45deg, #ff6b6b, #e55a5a); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <h3>Gentoo Penguin Family</h3>
-                        <p>Parents caring for their chicks in breeding season</p>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <div style="background: linear-gradient(45deg, #8b5cf6, #7c3aed); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 5rem;">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <h3>Chinstrap Penguin</h3>
-                        <p>Named for the narrow black band under their head</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section facts" id="conservation">
-            <div class="facts-content">
-                <h2 class="section-title">Conservation Facts</h2>
-                <div class="fact-list">
-                    <div class="fact-item">
-                        <div class="fact-icon">
-                            <i class="fas fa-temperature-low"></i>
-                        </div>
-                        <h3>Climate Change Impact</h3>
-                        <p>Rising temperatures are reducing sea ice, which is critical for penguin breeding and feeding. Some colonies have declined by over 50% in the last 30 years.</p>
-                    </div>
-                    <div class="fact-item">
-                        <div class="fact-icon">
-                            <i class="fas fa-fish"></i>
-                        </div>
-                        <h3>Food Chain Disruption</h3>
-                        <p>Overfishing and krill harvesting are depleting the primary food sources for many penguin species, forcing them to swim farther to find food.</p>
-                    </div>
-                    <div class="fact-item">
-                        <div class="fact-icon">
-                            <i class="fas fa-hands-helping"></i>
-                        </div>
-                        <h3>How You Can Help</h3>
-                        <p>Support conservation organizations, reduce your carbon footprint, choose sustainable seafood, and spread awareness about these incredible birds.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
+  <header>
     <div class="container">
-        <!-- AI Chat Interface -->
-        <div class="chat-container" id="chat-container">
-            <div class="chat-header">
-                <div class="user-info">
-                    <div class="user-icon" id="chat-user-initial">U</div>
-                    <div class="user-details">
-                        <h2 id="chat-username">User</h2>
-                        <div class="premium-badge" id="chat-premium-status">Free User</div>
-                        <div class="user-actions">
-                            <button class="btn btn-outline" id="save-chat-btn">
-                                <i class="fas fa-save"></i> Save Chat
-                            </button>
-                            <button class="btn btn-outline" id="clear-chat-btn">
-                                <i class="fas fa-trash"></i> Clear
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-controls">
-                    <div class="premium-status">
-                        <i class="fas fa-robot"></i>
-                        <span id="ai-model-status">Standard AI Model</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="chat-messages" id="chat-messages">
-                <div class="message bot-message">
-                    <p>Hello! I'm Pengi, your penguin AI assistant. I'm here to chat about penguins, Antarctica, conservation, or anything else you'd like to discuss. What's on your mind today?</p>
-                    <div class="message-time">Today at 10:30 AM</div>
-                </div>
-            </div>
-            
-            <div class="chat-input-container">
-                <div class="chat-input">
-                    <i class="fas fa-comment-alt"></i>
-                    <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
-                </div>
-                <button class="send-btn" id="send-btn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-            
-            <div class="history-container">
-                <div class="history-title">
-                    <h3><i class="fas fa-history"></i> Your Chat History</h3>
-                </div>
-                <div class="history-list" id="history-list">
-                    <!-- Chat history will be populated dynamically -->
-                </div>
-            </div>
+      <div class="header-content">
+        <div class="logo">
+          <i class="fas fa-igloo"></i>
+          <span>Penguin Paradise</span>
         </div>
+        <nav>
+          <ul>
+            <li><a href="#"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="#habitat"><i class="fas fa-snowflake"></i> Habitat</a></li>
+            <li><a href="#species"><i class="fas fa-book-open"></i> Species</a></li>
+            <li><a href="#gallery"><i class="fas fa-camera"></i> Gallery</a></li>
+            <li><a href="#conservation"><i class="fas fa-hand-holding-heart"></i> Conservation</a></li>
+          </ul>
+        </nav>
+        <div class="auth-section">
+          <button id="loginBtn" class="btn btn-outline">Login</button>
+          <button id="signupBtn" class="btn btn-primary">Sign Up</button>
+          <div id="userProfile" style="display:none; align-items:center; gap:12px;">
+            <span id="userNameDisplay"></span>
+            <button id="logoutBtn" class="btn btn-outline">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Discover the Majestic World of Penguins</h1>
+        <p>From the icy Antarctic to the warm coasts of South Africa — explore penguin species, behaviors, and conservation.</p>
+        <button id="exploreBtn" class="btn btn-primary">Explore Species</button>
+      </div>
+    </section>
+
+    <h2 id="habitat" class="section-title">Penguin Habitats</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-igloo"></i></div>
+        <div class="feature-content">
+          <h3>Antarctic Ice Shelves</h3>
+          <p>Emperor and Adélie penguins thrive in the coldest, harshest environments on Earth.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-tree"></i></div>
+        <div class="feature-content">
+          <h3>Temperate Coasts</h3>
+          <p>Humboldt and Magellanic penguins nest in burrows along rocky South American coastlines.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-sun"></i></div>
+        <div class="feature-content">
+          <h3>Tropical Islands</h3>
+          <p>Yes! The Galápagos penguin lives near the equator — the only penguin north of the equator.</p>
+        </div>
+      </div>
     </div>
 
-    <footer>
-        <div class="container footer-content">
-            <div class="footer-logo">
-                <i class="fas fa-igloo"></i>
-                <span>Penguin Paradise</span>
-            </div>
-            <p>Connecting people with nature through technology and conservation awareness</p>
-            <div class="footer-links">
-                <a href="#species">Penguin Species</a>
-                <a href="#habitat">Habitats</a>
-                <a href="#conservation">Conservation Efforts</a>
-                <a href="#about">Our Mission</a>
-                <a href="#" class="credits-link" id="credits-link">Special Access</a>
-            </div>
-            <p class="copyright">
-                © <span id="year">2025</span> Penguin Paradise. All rights reserved.
-            </p>
+    <h2 id="species" class="section-title">Featured Species</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#d32f2f;"><i class="fas fa-crown"></i></div>
+        <div class="feature-content">
+          <h3>Emperor Penguin</h3>
+          <p>The largest species — up to 4 feet tall! Males incubate eggs through Antarctic winter.</p>
         </div>
-    </footer>
-
-    <!-- Modals -->
-    <div class="modal" id="login-modal">
-        <div class="modal-content">
-            <span class="close-modal" id="close-login-modal">&times;</span>
-            <h2><i class="fas fa-sign-in-alt"></i> Login to Your Account</h2>
-            <p>Choose your preferred login method to access AI chat features</p>
-            
-            <div class="modal-form">
-                <div class="auth-container" id="auth-container">
-                    <div class="fallback-auth">
-                        <div class="error-message" id="auth-error" style="display: none;">
-                            <i class="fas fa-exclamation-circle"></i> <span id="auth-error-message">Authentication error</span>
-                        </div>
-                        
-                        <div class="auth-option" id="google-login">
-                            <div class="google-icon">
-                                <i class="fab fa-google"></i>
-                            </div>
-                            <span>Continue with Google</span>
-                        </div>
-                        
-                        <div class="divider">
-                            <span>or</span>
-                        </div>
-                        
-                        <div class="auth-option" id="email-login">
-                            <div class="email-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <span>Continue with Email</span>
-                        </div>
-                    </div>
-                    
-                    <div id="email-form" style="display: none; width: 100%; max-width: 400px; margin: 0 auto;">
-                        <input type="email" class="modal-input" id="login-email" placeholder="Your email address">
-                        <input type="password" class="modal-input" id="login-password" placeholder="Your password">
-                        <div style="text-align: left; margin: 1rem 0;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="remember-me" style="width: 18px; height: 18px;">
-                                <span>Remember me</span>
-                            </label>
-                        </div>
-                        <div class="modal-btns">
-                            <button class="btn btn-outline" id="back-to-login-options">
-                                <i class="fas fa-arrow-left"></i> Back
-                            </button>
-                            <button class="btn" id="submit-login">
-                                <span id="login-spinner" style="display: none;" class="loading"></span>
-                                Login
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="signup-form" style="display: none; width: 100%; max-width: 400px; margin: 0 auto;">
-                        <input type="text" class="modal-input" id="signup-username" placeholder="Choose a username">
-                        <input type="email" class="modal-input" id="signup-email" placeholder="Your email address">
-                        <input type="password" class="modal-input" id="signup-password" placeholder="Create a password">
-                        <input type="password" class="modal-input" id="signup-confirm" placeholder="Confirm password">
-                        <div style="text-align: left; margin: 1rem 0;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="terms-agree" style="width: 18px; height: 18px;" required>
-                                <span>I agree to the <a href="#" style="color: var(--gold);">Terms of Service</a> and <a href="#" style="color: var(--gold);">Privacy Policy</a></span>
-                            </label>
-                        </div>
-                        <div class="modal-btns">
-                            <button class="btn btn-outline" id="back-to-auth-options">
-                                <i class="fas fa-arrow-left"></i> Back
-                            </button>
-                            <button class="btn btn-secondary" id="submit-signup">
-                                <span id="signup-spinner" style="display: none;" class="loading"></span>
-                                Create Account
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <p>Don't have an account? <a href="#" id="switch-to-signup-link" style="color: var(--gold); font-weight: 600; text-decoration: none;">Sign up here</a></p>
-                    <p style="margin-top: 0.5rem;">
-                        <a href="#" id="forgot-password" style="color: #94a3b8; text-decoration: none; font-size: 0.95rem;">
-                            <i class="fas fa-question-circle"></i> Forgot password?
-                        </a>
-                    </p>
-                </div>
-            </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#1976d2;"><i class="fas fa-running"></i></div>
+        <div class="feature-content">
+          <h3>Adélie Penguin</h3>
+          <p>Known for their tuxedo-like appearance and feisty personalities.</p>
         </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#388e3c;"><i class="fas fa-feather"></i></div>
+        <div class="feature-content">
+          <h3>Little Blue Penguin</h3>
+          <p>The smallest penguin — only 13 inches tall! Native to Australia and New Zealand.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="modal" id="signup-modal">
-        <div class="modal-content">
-            <span class="close-modal" id="close-signup-modal">&times;</span>
-            <h2><i class="fas fa-user-plus"></i> Create New Account</h2>
-            <p>Join our community to save chats and access exclusive features</p>
-            
-            <div class="modal-form">
-                <div class="auth-container">
-                    <div id="signup-form-container">
-                        <input type="text" class="modal-input" id="signup-username-modal" placeholder="Choose a username">
-                        <input type="email" class="modal-input" id="signup-email-modal" placeholder="Your email address">
-                        <input type="password" class="modal-input" id="signup-password-modal" placeholder="Create a password">
-                        <input type="password" class="modal-input" id="signup-confirm-modal" placeholder="Confirm password">
-                        
-                        <div style="text-align: left; margin: 1rem 0;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="terms-agree-modal" style="width: 18px; height: 18px;" required>
-                                <span>I agree to the <a href="#" style="color: var(--gold);">Terms of Service</a> and <a href="#" style="color: var(--gold);">Privacy Policy</a></span>
-                            </label>
-                        </div>
-                        
-                        <div class="modal-btns">
-                            <button class="btn btn-outline" id="cancel-signup-modal">Cancel</button>
-                            <button class="btn btn-secondary" id="submit-signup-modal">
-                                <span id="signup-spinner-modal" style="display: none;" class="loading"></span>
-                                Create Account
-                            </button>
-                        </div>
-                        
-                        <div style="margin-top: 1.5rem; text-align: center;">
-                            <p>Already have an account? <a href="#" id="switch-to-login-link" style="color: var(--gold); font-weight: 600; text-decoration: none;">Login here</a></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="upgradeBanner" class="upgrade-banner">
+      <h2>✨ Unlock Premium Penguin Insights! ✨</h2>
+      <p>Get access to exclusive content, high-resolution species guides, and real-time conservation updates.</p>
+      <button id="upgradeBtn" class="btn upgrade-btn">Upgrade to Premium</button>
+    </div>
+
+    <div id="chatContainer" class="chat-container">
+      <div class="chat-header">
+        <h3><i class="fas fa-robot"></i> Penguin Facts Assistant</h3>
+        <button id="saveChatBtn" class="btn btn-outline"><i class="fas fa-save"></i> Save Chat</button>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message bot-message">Hello! I'm your AI Penguin Assistant. Ask me anything about penguin species, habitats, diet, or conservation! 🐧</div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="userInput" placeholder="e.g., How deep can emperor penguins dive?">
+        <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <div class="loading" id="loadingIndicator">
+      <div class="spinner"></div>
+      <p>Consulting the penguin elders...</p>
+    </div>
+
+    <h2 id="gallery" class="section-title">Penguin Gallery</h2>
+    <div class="gallery-grid">
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1543507480-47292485e591?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Emperor Penguin"></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1533254431225-f9e0708e039b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Adelie Penguin"></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1534438327243-6f7b0c4b5b57?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Chinstrap Penguin"></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1533827432537-2788a1a52e86?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Gentoo Penguin"></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1552331351-2a0cfe4e6c7f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="King Penguin"></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1551633605-b11f0e1e2c9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Rockhopper Penguin"></div>
+    </div>
+
+    <h2 id="conservation" class="section-title">Conservation Efforts</h2>
+    <p style="text-align:center; margin:1.5rem 0; font-size:1.1rem; color:#0d4a6b;">
+      Penguins face threats from climate change, overfishing, and habitat loss. Support organizations like <strong>Penguin Foundation</strong> and <strong>WWF</strong> to protect them.
+    </p>
+
+    <div id="adminPanel" class="admin-panel">
+      <h2><i class="fas fa-user-shield"></i> Admin Dashboard</h2>
+      <div class="user-list" id="userList">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h3>About Penguin Paradise</h3>
+          <p>Dedicated to educating the public about penguin biology, ecology, and the urgent need for conservation in a changing climate.</p>
         </div>
-    </div>
-
-    <div class="modal" id="upgrade-modal">
-        <div class="modal-content">
-            <span class="close-modal" id="close-upgrade-modal">&times;</span>
-            <h2><i class="fas fa-crown"></i> Upgrade to Premium</h2>
-            <p>Unlock exclusive features with our premium membership</p>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
-                <div class="card" style="border-left: 4px solid var(--primary);">
-                    <div class="card-content">
-                        <h3 style="color: var(--primary); margin-bottom: 1rem;"><i class="fas fa-robot"></i> Advanced AI</h3>
-                        <p>Access the #1 ranked free AI model from Hugging Face with better responses and capabilities</p>
-                    </div>
-                </div>
-                <div class="card" style="border-left: 4px solid var(--secondary);">
-                    <div class="card-content">
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;"><i class="fas fa-save"></i> Unlimited History</h3>
-                        <p>Save unlimited chat histories with cloud storage and access them from any device</p>
-                    </div>
-                </div>
-                <div class="card" style="border-left: 4px solid var(--gold);">
-                    <div class="card-content">
-                        <h3 style="color: var(--gold); margin-bottom: 1rem;"><i class="fas fa-crown"></i> Premium Badge</h3>
-                        <p>Show off your premium status with a special gold badge next to your name</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background: rgba(212, 175, 55, 0.1); padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0; text-align: center;">
-                <h3 style="font-size: 1.6rem; color: var(--gold); margin-bottom: 0.5rem;">Special Introductory Offer</h3>
-                <p style="font-size: 1.2rem; font-weight: 700;">$0.00 <span style="text-decoration: line-through; opacity: 0.7; margin-left: 0.5rem;">$9.99/month</span></p>
-                <p style="margin-top: 0.5rem; opacity: 0.9;">Free upgrade for all users during our launch period!</p>
-            </div>
-            
-            <div class="modal-btns">
-                <button class="btn btn-outline" id="cancel-upgrade">Maybe Later</button>
-                <button class="btn btn-gold pulse" id="confirm-upgrade">
-                    <span id="upgrade-spinner" style="display: none;" class="loading"></span>
-                    Upgrade Now - Free
-                </button>
-            </div>
-            
-            <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
-                <i class="fas fa-lock"></i> Your payment information is not required. This is a completely free upgrade during our launch promotion.
-            </p>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#habitat">Habitats</a></li>
+            <li><a href="#species">Species Guide</a></li>
+            <li><a href="#gallery">Photo Gallery</a></li>
+            <li><a href="#conservation">How to Help</a></li>
+          </ul>
         </div>
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul>
+            <li><i class="fas fa-envelope"></i> info@penguinparadise.org</li>
+            <li><i class="fas fa-globe"></i> www.penguinparadise.org</li>
+            <li><i class="fas fa-phone"></i> +1 (555) PENG-UIN</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Penguin Paradise. All penguin facts verified by marine biologists.</p>
+        <p><a href="#" id="creditsLink" style="color:#4fc3f7; text-decoration:underline; margin-top:8px; display:inline-block;">Credits & Special Access</a></p>
+      </div>
     </div>
+  </footer>
 
-    <!-- Toast notifications -->
-    <div class="toast" id="toast-notification">
-        <span id="toast-message">Notification message</span>
-        <span class="toast-close" id="toast-close">&times;</span>
+  <!-- Secret Code Modal -->
+  <div id="creditsModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>🔐 Special Access Required</h2>
+      <p>Enter the secret code to unlock the AI Penguin Assistant:</p>
+      <input type="text" id="secretCodeInput" class="modal-input" maxlength="8" autocomplete="off" autofocus>
+      <button id="submitSecretCode" class="btn btn-primary">Unlock</button>
+      <button id="closeModal" class="btn btn-outline" style="margin-top:15px;">Cancel</button>
+      <p style="margin-top:20px; font-size:0.85rem; color:#666;">Hint: The code is alphanumeric and case-sensitive.</p>
     </div>
-    
-    <!-- Network status indicator -->
-    <div class="network-status" id="network-status">Offline</div>
+  </div>
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <script>
-        // Firebase Configuration - REPLACE WITH YOUR ACTUAL CONFIG
-        const firebaseConfig = {
+  <script>
+    // 🔐 CRITICAL: Admin email — NEVER displayed in UI
+    const ADMIN_EMAIL = "lkmukhil@gmail.com";
+    const SECRET_CODE = "K120472";
+
+    // Firebase config — REPLACE THESE WITH YOUR OWN
+    const firebaseConfig = {
   apiKey: "AIzaSyA-7KtFeFcUndaOxdYxjTAzTsaBKvuOdDA",
   authDomain: "nexus-2842a.firebaseapp.com",
   projectId: "nexus-2842a",
@@ -1857,1004 +755,343 @@
   appId: "1:888654157334:web:9178855888bff2aaeac737",
   measurementId: "G-9F4JH2NYR0"
 };
-        
-        // Initialize Firebase
-        let app, auth, db;
-        
-        try {
-            // Initialize Firebase
-            app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-            
-            console.log("Firebase initialized successfully");
-            
-            // Firebase settings
-            db.settings({ ignoreUndefinedProperties: true });
-            
-            // Offline persistence
-            db.enablePersistence()
-                .catch((err) => {
-                    console.error("Persistence error:", err);
-                    if (err.code === 'failed-precondition') {
-                        console.log("Multiple tabs open, persistence can only be enabled in one tab at a time.");
-                    } else if (err.code === 'unimplemented') {
-                        console.log("Browser doesn't support persistence.");
-                    }
-                });
-                
-            // Setup network monitoring
-            window.addEventListener('online', updateNetworkStatus);
-            window.addEventListener('offline', updateNetworkStatus);
-            updateNetworkStatus();
-            
-        } catch (error) {
-            console.error("Firebase initialization error:", error);
-            showToast("Failed to initialize Firebase. Please check your connection.", "error");
-        }
-        
-        // DOM Elements
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const navMenu = document.getElementById('nav-menu');
-        const themeToggle = document.getElementById('theme-toggle');
-        const loginBtn = document.getElementById('login-btn');
-        const signupBtn = document.getElementById('signup-btn');
-        const userMenu = document.getElementById('user-menu');
-        const userMenuBtn = document.getElementById('user-menu-btn');
-        const userDropdown = document.getElementById('user-dropdown');
-        const logoutBtn = document.getElementById('logout-btn');
-        const unlockChatBtn = document.getElementById('unlock-chat-btn');
-        const creditsLink = document.getElementById('credits-link');
-        const closeLoginModal = document.getElementById('close-login-modal');
-        const closeSignupModal = document.getElementById('close-signup-modal');
-        const closeUpgradeModal = document.getElementById('close-upgrade-modal');
-        const loginModal = document.getElementById('login-modal');
-        const signupModal = document.getElementById('signup-modal');
-        const upgradeModal = document.getElementById('upgrade-modal');
-        const googleLogin = document.getElementById('google-login');
-        const emailLogin = document.getElementById('email-login');
-        const submitLogin = document.getElementById('submit-login');
-        const submitSignup = document.getElementById('submit-signup');
-        const submitSignupModal = document.getElementById('submit-signup-modal');
-        const confirmUpgrade = document.getElementById('confirm-upgrade');
-        const backToLoginOptions = document.getElementById('back-to-login-options');
-        const backToAuthOptions = document.getElementById('back-to-auth-options');
-        const switchToSignupLink = document.getElementById('switch-to-signup-link');
-        const switchToLoginLink = document.getElementById('switch-to-login-link');
-        const cancelSignupModal = document.getElementById('cancel-signup-modal');
-        const cancelUpgrade = document.getElementById('cancel-upgrade');
-        const loginEmail = document.getElementById('login-email');
-        const loginPassword = document.getElementById('login-password');
-        const signupUsername = document.getElementById('signup-username');
-        const signupEmail = document.getElementById('signup-email');
-        const signupPassword = document.getElementById('signup-password');
-        const signupConfirm = document.getElementById('signup-confirm');
-        const signupUsernameModal = document.getElementById('signup-username-modal');
-        const signupEmailModal = document.getElementById('signup-email-modal');
-        const signupPasswordModal = document.getElementById('signup-password-modal');
-        const signupConfirmModal = document.getElementById('signup-confirm-modal');
-        const termsAgree = document.getElementById('terms-agree');
-        const termsAgreeModal = document.getElementById('terms-agree-modal');
-        const authError = document.getElementById('auth-error');
-        const authErrorMessage = document.getElementById('auth-error-message');
-        const chatContainer = document.getElementById('chat-container');
-        const chatUserInitial = document.getElementById('chat-user-initial');
-        const chatUsername = document.getElementById('chat-username');
-        const chatPremiumStatus = document.getElementById('chat-premium-status');
-        const aiModelStatus = document.getElementById('ai-model-status');
-        const saveChatBtn = document.getElementById('save-chat-btn');
-        const clearChatBtn = document.getElementById('clear-chat-btn');
-        const chatMessages = document.getElementById('chat-messages');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const historyList = document.getElementById('history-list');
-        const userInitial = document.getElementById('user-initial');
-        const dropdownUserInitial = document.getElementById('dropdown-user-initial');
-        const dropdownUsername = document.getElementById('dropdown-username');
-        const dropdownPremiumStatus = document.getElementById('dropdown-premium-status');
-        const upgradeAccountBtn = document.getElementById('upgrade-account-btn');
-        const viewChatsBtn = document.getElementById('view-chats-btn');
-        const yearElement = document.getElementById('year');
-        const toastNotification = document.getElementById('toast-notification');
-        const toastMessage = document.getElementById('toast-message');
-        const toastClose = document.getElementById('toast-close');
-        const networkStatus = document.getElementById('network-status');
-        const emailForm = document.getElementById('email-form');
-        const signupForm = document.getElementById('signup-form');
-        const signupFormContainer = document.getElementById('signup-form-container');
 
-        // State variables
-        let isLoggedIn = false;
-        let isPremium = false;
-        let chatHistory = [];
-        let currentUser = null;
-        let hasUnsavedMessages = false;
-        const aiModels = {
-            free: "facebook/blenderbot-400M-distill",
-            premium: "microsoft/DialoGPT-medium"
-        };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        // Initialize the app
-        function init() {
-            // Set current year
-            yearElement.textContent = new Date().getFullYear();
-            
-            // Load theme preference
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            themeToggle.innerHTML = savedTheme === 'dark' ? 
-                '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-            
-            // Setup event listeners
-            setupEventListeners();
-            
-            // Setup toast notifications
-            setupToast();
-            
-            // Register service worker for PWA
-            registerServiceWorker();
-            
-            // Setup Firebase authentication state observer
-            setupAuthStateObserver();
-        }
-        
-        function setupAuthStateObserver() {
-            if (!auth) return;
-            
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    // User is signed in
-                    try {
-                        // Get user document from Firestore
-                        const userDoc = await db.collection('users').doc(user.uid).get();
-                        
-                        if (userDoc.exists) {
-                            const userData = userDoc.data();
-                            
-                            // Update state
-                            isLoggedIn = true;
-                            currentUser = {
-                                uid: user.uid,
-                                email: user.email,
-                                username: userData.username || user.email.split('@')[0],
-                                isPremium: userData.isPremium || false,
-                                lastLogin: new Date().toISOString()
-                            };
-                            
-                            isPremium = currentUser.isPremium;
-                            
-                            // Update UI
-                            updateAuthUI();
-                            
-                            // Load chat history
-                            loadChatHistory();
-                            
-                            showToast(`Welcome back, ${currentUser.username}!`, "success");
-                        } else {
-                            // New user - create profile
-                            const username = user.email.split('@')[0];
-                            const userRef = db.collection('users').doc(user.uid);
-                            
-                            await userRef.set({
-                                username: username,
-                                email: user.email,
-                                isPremium: false,
-                                dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-                                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                            
-                            // Update state
-                            isLoggedIn = true;
-                            currentUser = {
-                                uid: user.uid,
-                                email: user.email,
-                                username: username,
-                                isPremium: false,
-                                lastLogin: new Date().toISOString()
-                            };
-                            
-                            isPremium = currentUser.isPremium;
-                            
-                            // Update UI
-                            updateAuthUI();
-                            showToast(`Welcome to Penguin Paradise, ${username}!`, "success");
-                        }
-                        
-                        // Update last login timestamp
-                        await db.collection('users').doc(user.uid).update({
-                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        
-                    } catch (error) {
-                        console.error("Error handling auth state:", error);
-                        showToast("Error loading user profile. Please try again.", "error");
-                    }
-                } else {
-                    // User is signed out
-                    isLoggedIn = false;
-                    isPremium = false;
-                    currentUser = null;
-                    
-                    // Update UI
-                    updateAuthUI();
-                }
-            });
-        }
-        
-        function setupEventListeners() {
-            // Mobile menu toggle
-            mobileMenuBtn.addEventListener('click', () => {
-                navMenu.classList.toggle('show');
-                mobileMenuBtn.innerHTML = navMenu.classList.contains('show') ? 
-                    '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-            });
-            
-            // Theme toggle
-            themeToggle.addEventListener('click', toggleTheme);
-            
-            // Auth buttons
-            loginBtn.addEventListener('click', () => showModal(loginModal));
-            signupBtn.addEventListener('click', () => showModal(signupModal));
-            unlockChatBtn.addEventListener('click', () => {
-                if (isLoggedIn) {
-                    showChatInterface();
-                } else {
-                    showModal(loginModal);
-                }
-            });
-            creditsLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showToast("Special access features coming soon!", "info");
-            });
-            
-            // Modal controls
-            closeLoginModal.addEventListener('click', () => hideModal(loginModal));
-            closeSignupModal.addEventListener('click', () => hideModal(signupModal));
-            closeUpgradeModal.addEventListener('click', () => hideModal(upgradeModal));
-            cancelSignupModal.addEventListener('click', () => hideModal(signupModal));
-            cancelUpgrade.addEventListener('click', () => hideModal(upgradeModal));
-            
-            // Login method selection
-            googleLogin.addEventListener('click', handleGoogleLogin);
-            emailLogin.addEventListener('click', () => {
-                emailForm.style.display = 'block';
-                document.querySelector('.fallback-auth').style.display = 'none';
-            });
-            
-            // Back buttons
-            backToLoginOptions.addEventListener('click', () => {
-                emailForm.style.display = 'none';
-                document.querySelector('.fallback-auth').style.display = 'block';
-                authError.style.display = 'none';
-            });
-            
-            backToAuthOptions.addEventListener('click', () => {
-                signupForm.style.display = 'none';
-                document.querySelector('.fallback-auth').style.display = 'block';
-                authError.style.display = 'none';
-            });
-            
-            // Switch between login and signup
-            switchToSignupLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                emailForm.style.display = 'none';
-                signupForm.style.display = 'block';
-                document.querySelector('.fallback-auth').style.display = 'none';
-                authError.style.display = 'none';
-            });
-            
-            switchToLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                hideModal(signupModal);
-                showModal(loginModal);
-            });
-            
-            // Form submissions
-            submitLogin.addEventListener('click', handleEmailLogin);
-            submitSignup.addEventListener('click', handleEmailSignup);
-            submitSignupModal.addEventListener('click', handleModalSignup);
-            confirmUpgrade.addEventListener('click', handleUpgradeConfirm);
-            
-            // User menu
-            userMenuBtn.addEventListener('click', toggleUserMenu);
-            logoutBtn.addEventListener('click', handleLogout);
-            upgradeAccountBtn.addEventListener('click', () => showModal(upgradeModal));
-            viewChatsBtn.addEventListener('click', () => {
-                showChatInterface();
-                hideModal(userDropdown);
-            });
-            
-            // Chat functionality
-            sendBtn.addEventListener('click', sendMessage);
-            userInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-            saveChatBtn.addEventListener('click', saveCurrentChat);
-            clearChatBtn.addEventListener('click', clearChat);
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
-                    userDropdown.style.display = 'none';
-                }
-            });
-            
-            // Handle beforeunload event for unsaved chats
-            window.addEventListener('beforeunload', (e) => {
-                if (hasUnsavedMessages && isLoggedIn) {
-                    e.preventDefault();
-                    e.returnValue = 'You have unsaved chat messages. Are you sure you want to leave?';
-                }
-            });
-        }
-        
-        function setupToast() {
-            toastClose.addEventListener('click', () => {
-                toastNotification.classList.remove('show');
-            });
-            
-            // Auto-hide after 5 seconds
-            setInterval(() => {
-                if (toastNotification.classList.contains('show')) {
-                    toastNotification.classList.remove('show');
-                }
-            }, 5000);
-        }
-        
-        function showToast(message, type = 'info') {
-            toastMessage.textContent = message;
-            toastNotification.className = `toast ${type}`;
-            toastNotification.classList.add('show');
-        }
-        
-        function updateNetworkStatus() {
-            if (navigator.onLine) {
-                networkStatus.style.display = 'none';
-            } else {
-                networkStatus.style.display = 'block';
-            }
-        }
+    // DOM Elements
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userProfile = document.getElementById('userProfile');
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    const creditsLink = document.getElementById('creditsLink');
+    const creditsModal = document.getElementById('creditsModal');
+    const secretCodeInput = document.getElementById('secretCodeInput');
+    const submitSecretCode = document.getElementById('submitSecretCode');
+    const closeModal = document.getElementById('closeModal');
+    const chatContainer = document.getElementById('chatContainer');
+    const chatMessages = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const saveChatBtn = document.getElementById('saveChatBtn');
+    const upgradeBanner = document.getElementById('upgradeBanner');
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const adminPanel = document.getElementById('adminPanel');
+    const userList = document.getElementById('userList');
+    const exploreBtn = document.getElementById('exploreBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
 
-        // Authentication functions
-        function handleGoogleLogin() {
-            showLoading(true);
-            authError.style.display = 'none';
-            
-            const provider = new firebase.auth.GoogleAuthProvider();
-            
-            auth.signInWithPopup(provider)
-                .then(async (result) => {
-                    // This gives you a Google Access Token
-                    const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-                    const token = credential.accessToken;
-                    const user = result.user;
-                    
-                    // Check if user exists in Firestore
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    
-                    if (!userDoc.exists) {
-                        // Create new user document
-                        await db.collection('users').doc(user.uid).set({
-                            username: user.displayName || user.email.split('@')[0],
-                            email: user.email,
-                            isPremium: false,
-                            dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-                            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                            avatarUrl: user.photoURL || null
-                        });
-                    } else {
-                        // Update last login
-                        await db.collection('users').doc(user.uid).update({
-                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                    
-                    hideModal(loginModal);
-                    showLoading(false);
-                })
-                .catch((error) => {
-                    console.error("Google login error:", error);
-                    handleAuthError(error);
-                    showLoading(false);
-                });
-        }
-        
-        function handleEmailLogin() {
-            const email = loginEmail.value.trim();
-            const password = loginPassword.value.trim();
-            
-            if (!email || !password) {
-                showToast('Please enter both email and password', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            authError.style.display = 'none';
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then(async (userCredential) => {
-                    const user = userCredential.user;
-                    
-                    // Get user document
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    
-                    if (userDoc.exists) {
-                        // Update last login
-                        await db.collection('users').doc(user.uid).update({
-                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                    
-                    hideModal(loginModal);
-                    emailForm.style.display = 'none';
-                    document.querySelector('.fallback-auth').style.display = 'block';
-                    loginEmail.value = '';
-                    loginPassword.value = '';
-                    showLoading(false);
-                })
-                .catch((error) => {
-                    console.error("Email login error:", error);
-                    handleAuthError(error);
-                    showLoading(false);
-                });
-        }
-        
-        function handleEmailSignup() {
-            const username = signupUsername.value.trim();
-            const email = signupEmail.value.trim();
-            const password = signupPassword.value.trim();
-            const confirm = signupConfirm.value.trim();
-            
-            if (!username || !email || !password || !confirm) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
-            
-            if (!termsAgree.checked) {
-                showToast('You must agree to the Terms of Service and Privacy Policy', 'error');
-                return;
-            }
-            
-            if (password !== confirm) {
-                showToast('Passwords do not match', 'error');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showToast('Password must be at least 6 characters', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            authError.style.display = 'none';
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(async (userCredential) => {
-                    const user = userCredential.user;
-                    
-                    // Create user document in Firestore
-                    await db.collection('users').doc(user.uid).set({
-                        username: username,
-                        email: email,
-                        isPremium: false,
-                        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    // Send email verification
-                    await user.sendEmailVerification();
-                    
-                    // Hide forms and show success message
-                    signupForm.style.display = 'none';
-                    document.querySelector('.fallback-auth').style.display = 'block';
-                    showToast('Account created successfully! Please check your email for verification.', 'success');
-                    showLoading(false);
-                    
-                    // Clear form
-                    signupUsername.value = '';
-                    signupEmail.value = '';
-                    signupPassword.value = '';
-                    signupConfirm.value = '';
-                    termsAgree.checked = false;
-                })
-                .catch((error) => {
-                    console.error("Email signup error:", error);
-                    handleAuthError(error);
-                    showLoading(false);
-                });
-        }
-        
-        function handleModalSignup() {
-            const username = signupUsernameModal.value.trim();
-            const email = signupEmailModal.value.trim();
-            const password = signupPasswordModal.value.trim();
-            const confirm = signupConfirmModal.value.trim();
-            
-            if (!username || !email || !password || !confirm) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
-            
-            if (!termsAgreeModal.checked) {
-                showToast('You must agree to the Terms of Service and Privacy Policy', 'error');
-                return;
-            }
-            
-            if (password !== confirm) {
-                showToast('Passwords do not match', 'error');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showToast('Password must be at least 6 characters', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(async (userCredential) => {
-                    const user = userCredential.user;
-                    
-                    // Create user document in Firestore
-                    await db.collection('users').doc(user.uid).set({
-                        username: username,
-                        email: email,
-                        isPremium: false,
-                        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    // Send email verification
-                    await user.sendEmailVerification();
-                    
-                    // Hide modal
-                    hideModal(signupModal);
-                    showToast('Account created successfully! Please check your email for verification.', 'success');
-                    showLoading(false);
-                    
-                    // Clear form
-                    signupUsernameModal.value = '';
-                    signupEmailModal.value = '';
-                    signupPasswordModal.value = '';
-                    signupConfirmModal.value = '';
-                    termsAgreeModal.checked = false;
-                })
-                .catch((error) => {
-                    console.error("Modal signup error:", error);
-                    handleAuthError(error);
-                    showLoading(false);
-                });
-        }
-        
-        function handleAuthError(error) {
-            let message = 'Authentication failed. ';
-            
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    message += 'This email is already registered.';
-                    break;
-                case 'auth/invalid-email':
-                    message += 'Invalid email format.';
-                    break;
-                case 'auth/weak-password':
-                    message += 'Password is too weak.';
-                    break;
-                case 'auth/user-not-found':
-                    message += 'No user found with this email.';
-                    break;
-                case 'auth/wrong-password':
-                    message += 'Incorrect password.';
-                    break;
-                case 'auth/popup-closed-by-user':
-                    message = 'Login cancelled by user.';
-                    break;
-                case 'auth/network-request-failed':
-                    message = 'Network error. Please check your connection.';
-                    break;
-                default:
-                    message += 'Please try again later.';
-            }
-            
-            authErrorMessage.textContent = message;
-            authError.style.display = 'block';
-            showToast(message, 'error');
-        }
-        
-        function showLoading(show) {
-            if (show) {
-                document.body.style.cursor = 'wait';
-                document.querySelectorAll('button').forEach(btn => {
-                    btn.disabled = true;
-                });
-            } else {
-                document.body.style.cursor = 'default';
-                document.querySelectorAll('button').forEach(btn => {
-                    btn.disabled = false;
-                });
-            }
-        }
+    // State
+    let currentUser = null;
+    let isAdmin = false;
+    let isPremium = false;
+    let chatHistory = [];
 
-        function handleLogout() {
-            auth.signOut()
-                .then(() => {
-                    showToast('You have been logged out successfully', 'success');
-                })
-                .catch((error) => {
-                    console.error("Logout error:", error);
-                    showToast('Error signing out. Please try again.', 'error');
-                });
+    // Initialize app
+    function initApp() {
+      // Auth state listener
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          currentUser = user;
+          renderUserProfile();
+          checkUserRoles();
+          loadSavedChats();
+        } else {
+          resetAuthState();
         }
+      });
 
-        function updateAuthUI() {
-            if (isLoggedIn && currentUser) {
-                // Show user menu, hide login/signup buttons
-                loginBtn.style.display = 'none';
-                signupBtn.style.display = 'none';
-                userMenu.style.display = 'block';
-                
-                // Update user initials and name
-                const initial = currentUser.username.charAt(0).toUpperCase();
-                userInitial.textContent = initial;
-                dropdownUserInitial.textContent = initial;
-                chatUserInitial.textContent = initial;
-                chatUsername.textContent = currentUser.username;
-                dropdownUsername.textContent = currentUser.username;
-                
-                // Update premium status
-                if (isPremium) {
-                    dropdownPremiumStatus.textContent = 'Premium User';
-                    dropdownPremiumStatus.classList.add('gold');
-                    chatPremiumStatus.textContent = 'Premium User';
-                    chatPremiumStatus.classList.add('gold');
-                    aiModelStatus.textContent = 'Premium AI Model';
-                    aiModelStatus.style.color = 'var(--gold)';
-                } else {
-                    dropdownPremiumStatus.textContent = 'Free User';
-                    dropdownPremiumStatus.classList.remove('gold');
-                    chatPremiumStatus.textContent = 'Free User';
-                    chatPremiumStatus.classList.remove('gold');
-                    aiModelStatus.textContent = 'Standard AI Model';
-                    aiModelStatus.style.color = '';
-                }
-            } else {
-                // Show login/signup buttons, hide user menu
-                loginBtn.style.display = 'block';
-                signupBtn.style.display = 'block';
-                userMenu.style.display = 'none';
-            }
-        }
+      // Event Listeners
+      creditsLink.addEventListener('click', openCreditsModal);
+      closeModal.addEventListener('click', closeCreditsModal);
+      submitSecretCode.addEventListener('click', handleSecretCode);
+      secretCodeInput.addEventListener('keypress', e => e.key === 'Enter' && handleSecretCode());
+      sendBtn.addEventListener('click', handleUserMessage);
+      userInput.addEventListener('keypress', e => e.key === 'Enter' && handleUserMessage());
+      saveChatBtn.addEventListener('click', saveCurrentChat);
+      upgradeBtn.addEventListener('click', requestPremiumUpgrade);
+      logoutBtn.addEventListener('click', signOutUser);
+      exploreBtn.addEventListener('click', () => document.getElementById('species').scrollIntoView({ behavior: 'smooth' }));
 
-        function toggleUserMenu() {
-            userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
-        }
+      // Prevent modal close on outside click
+      creditsModal.addEventListener('click', e => {
+        if (e.target === creditsModal) closeCreditsModal();
+      });
+    }
 
-        // Chat functionality
-        function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
-            
-            // Add user message
-            addMessage(message, 'user');
-            userInput.value = '';
-            hasUnsavedMessages = true;
-            
-            // Show typing indicator
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message bot-message';
-            typingIndicator.innerHTML = '<p><i class="fas fa-circle typing-dot"></i> <i class="fas fa-circle typing-dot"></i> <i class="fas fa-circle typing-dot"></i></p>';
-            chatMessages.appendChild(typingIndicator);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Simulate bot response after delay
-            setTimeout(() => {
-                // Remove typing indicator
-                chatMessages.removeChild(typingIndicator);
-                
-                // Get bot response based on user tier
-                const botResponse = getBotResponse(message, isPremium);
-                addMessage(botResponse, 'bot');
-                
-                // Save to history if logged in
-                if (isLoggedIn) {
-                    saveToHistory(message, botResponse);
-                }
-            }, 1500);
-        }
+    function renderUserProfile() {
+      loginBtn.style.display = 'none';
+      signupBtn.style.display = 'none';
+      userProfile.style.display = 'flex';
+      
+      // Display name or email
+      const displayName = currentUser.displayName || currentUser.email.split('@')[0];
+      userNameDisplay.textContent = displayName;
+    }
 
-        function addMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            
-            // Format URLs as links
-            const formattedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
-            
-            messageDiv.innerHTML = `
-                <p>${formattedText}</p>
-                <div class="message-time">${getCurrentTime()}</div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    function checkUserRoles() {
+      if (!currentUser) return;
 
-        function getCurrentTime() {
-            const now = new Date();
-            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
+      // 🔑 ADMIN CHECK — using the CORRECT email
+      if (currentUser.email === ADMIN_EMAIL) {
+        isAdmin = true;
+        isPremium = true;
+        adminPanel.style.display = 'block';
+        loadAdminDashboard();
+      } else {
+        isAdmin = false;
+        // In production: fetch isPremium from Firestore
+        // For demo: simulate based on localStorage or always false
+        isPremium = localStorage.getItem(`premium_${currentUser.uid}`) === 'true';
+      }
 
-        function getBotResponse(userMessage, isPremium) {
-            // Premium users get more detailed responses
-            const responses = isPremium ? premiumResponses : freeResponses;
-            const messageLower = userMessage.toLowerCase();
-            
-            // Keyword matching for relevant responses
-            for (const [keywords, response] of Object.entries(responses)) {
-                if (keywords.split(',').some(keyword => messageLower.includes(keyword))) {
-                    return response;
-                }
-            }
-            
-            // Default response if no keywords match
-            return isPremium ? 
-                premiumResponses.default : 
-                freeResponses.default;
-        }
+      // Apply premium styling
+      if (isPremium) {
+        userNameDisplay.innerHTML = `<span class="premium-badge"><i class="fas fa-crown"></i> ${userNameDisplay.textContent}</span>`;
+        upgradeBanner.style.display = 'none';
+      } else {
+        upgradeBanner.style.display = 'block';
+      }
+    }
 
-        const freeResponses = {
-            "hello,hi,hey": "Hello there! I'm Pengi, your penguin chat assistant. How can I help you today?",
-            "bye,goodbye,exit": "Waddle you later! Come back anytime to chat about penguins!",
-            "species,types,kinds": "There are 18 species of penguins worldwide. The most well-known include Emperor, Adélie, Gentoo, and Chinstrap penguins. Would you like to know more about a specific species?",
-            "antarctica,south pole": "Antarctica is home to several penguin species including Emperors and Adélies. It's their natural habitat where they've adapted to survive extreme cold. Did you know Emperor penguins can dive deeper than 500 meters?",
-            "diet,food,eat": "Penguins eat krill, fish, squid, and other sea creatures. An adult penguin can eat up to 2kg of food per day! Their diet varies by species and location.",
-            "conservation,save,protect": "Penguin conservation is crucial! You can help by supporting organizations like WWF, reducing your carbon footprint, and choosing sustainable seafood. Many penguin species are threatened by climate change.",
-            "funny,joke,laugh": "Why don't penguins fly? Because they're already outstanding in their field! 😄",
-            "default": "That's an interesting question about penguins! I'd love to help you learn more. Could you be more specific about what you'd like to know?"
-        };
+    function resetAuthState() {
+      currentUser = null;
+      isAdmin = false;
+      isPremium = false;
+      loginBtn.style.display = 'block';
+      signupBtn.style.display = 'block';
+      userProfile.style.display = 'none';
+      adminPanel.style.display = 'none';
+      upgradeBanner.style.display = 'none';
+      chatContainer.style.display = 'none';
+      chatMessages.innerHTML = '<div class="message bot-message">Please log in to use the chat assistant.</div>';
+    }
 
-        const premiumResponses = {
-            "hello,hi,hey": "Hello there! I'm Pengi, your premium penguin AI assistant. I have access to advanced knowledge about penguins, Antarctica, and conservation efforts. How can I assist you today?",
-            "bye,goodbye,exit": "Waddle you later! As a premium user, you can access your chat history anytime by clicking the 'View Chats' button in your profile menu. Have a wonderful day!",
-            "species,types,kinds": "There are 18 recognized penguin species, categorized into 6 genera. The largest is the Emperor Penguin (Aptenodytes forsteri) at 1.2m tall, while the smallest is the Little Blue Penguin (Eudyptula minor) at just 33cm. Each species has unique adaptations - for example, Gentoo penguins have white patches above their eyes, and Chinstraps have a distinctive black band under their chin. Would you like detailed information about a specific species, including their habitat, diet, and conservation status?",
-            "antarctica,south pole": "Antarctica is home to 5 penguin species that breed exclusively on the continent: Emperor, Adélie, Gentoo, Chinstrap, and Macaroni penguins. Emperor penguins are the only species that breeds during the harsh Antarctic winter, with males balancing eggs on their feet for 65 days while temperatures drop below -40°C. Climate change is causing significant habitat loss, with some colonies declining by over 50% in the last 30 years. Would you like to learn about conservation efforts or specific adaptations these incredible birds have developed?",
-            "diet,food,eat": "Penguins' diet varies significantly by species and habitat. Emperor penguins primarily eat fish and squid, diving to depths over 500m to catch prey. Adélie penguins consume mostly Antarctic krill, which makes up 90% of their diet. Gentoo penguins have the most diverse diet, including fish, krill, and squid. A single penguin can eat 2-3kg of food daily, and during breeding season, they may travel over 100km to find food for their chicks. Climate change is disrupting food chains, with krill populations declining due to reduced sea ice. Would you like to know more about how diet affects penguin conservation?",
-            "conservation,save,protect": "Penguin conservation requires a multi-faceted approach. The IUCN Red List classifies 10 of 18 penguin species as threatened. Key threats include climate change (reducing sea ice habitat), overfishing (depleting food sources), pollution, and habitat destruction. You can help by:\n\n1. Supporting organizations like Oceanites, WWF, and the Antarctic and Southern Ocean Coalition\n2. Reducing your carbon footprint\n3. Choosing sustainable seafood certified by MSC\n4. Advocating for Marine Protected Areas\n5. Reducing plastic use\n\nAs a premium user, you can join our monthly conservation webinars and access exclusive research reports. Would you like information about specific conservation projects?",
-            "intelligence,smart,brain": "Penguins demonstrate remarkable intelligence and complex social behaviors. They use sophisticated communication systems with unique vocalizations to identify mates and chicks in crowded colonies. Emperor penguins coordinate huddling movements in rotating waves to share warmth in -40°C temperatures. Studies show they can recognize individual humans and solve problems to access food. Their spatial memory is exceptional for navigating vast ocean territories. Research published in Nature in 2023 revealed penguin colonies use collective decision-making similar to honeybee swarms when selecting new breeding sites.",
-            "funny,joke,laugh": "Why don't penguins fly? Because they're already outstanding in their field! But here's a premium joke just for you: What do you call a penguin in the desert? Lost! 😄 Penguins actually can't survive in warm climates due to their specialized insulation - their feathers and blubber that keep them warm in Antarctica would cause them to overheat anywhere near the equator.",
-            "ai,model,how,work": "I'm powered by Hugging Face's state-of-the-art language models! As a premium user, you have access to microsoft/DialoGPT-medium, which has 345 million parameters and was trained on 147 million conversation exchanges. This allows me to understand context better, maintain conversation history, and provide more accurate, nuanced responses about penguins and related topics. The model uses transformer architecture with attention mechanisms to process language efficiently. Would you like to know more about how AI is being used in wildlife conservation?",
-            "default": "Thank you for your question! As a premium user, I have access to an extensive knowledge base about penguins, Antarctic ecosystems, and conservation science. I can provide detailed information on biology, behavior, habitats, threats, and protection efforts. Please feel free to ask anything specific you'd like to know, and I'll give you the most accurate, up-to-date information available."
-        };
+    // 🔒 Secret Code System
+    function openCreditsModal() {
+      creditsModal.style.display = 'flex';
+      secretCodeInput.value = '';
+      secretCodeInput.focus();
+    }
 
-        async function saveToHistory(userMsg, botMsg) {
-            if (!isLoggedIn || !currentUser) return;
-            
-            try {
-                const chatSession = {
-                    id: Date.now().toString(),
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    user: userMsg,
-                    bot: botMsg,
-                    userId: currentUser.uid
-                };
-                
-                // Save to Firestore
-                await db.collection('chathistory').doc(chatSession.id).set(chatSession);
-                
-                // Update local history
-                chatHistory.unshift(chatSession);
-                if (chatHistory.length > 100) chatHistory.pop(); // Limit history size
-                
-                renderHistoryPreview();
-                hasUnsavedMessages = false;
-                
-                showToast('Chat saved successfully!', 'success');
-            } catch (error) {
-                console.error("Error saving chat history:", error);
-                showToast('Failed to save chat. Please try again.', 'error');
-            }
-        }
+    function closeCreditsModal() {
+      creditsModal.style.display = 'none';
+      secretCodeInput.value = ''; // Clear for security
+    }
 
-        async function loadChatHistory() {
-            if (!isLoggedIn || !currentUser) return;
-            
-            try {
-                const historyRef = db.collection('chathistory')
-                    .where('userId', '==', currentUser.uid)
-                    .orderBy('timestamp', 'desc')
-                    .limit(100);
-                
-                const snapshot = await historyRef.get();
-                chatHistory = [];
-                
-                snapshot.forEach(doc => {
-                    chatHistory.push(doc.data());
-                });
-                
-                renderHistoryPreview();
-            } catch (error) {
-                console.error("Error loading chat history:", error);
-                showToast('Failed to load chat history. Please try again.', 'error');
-            }
-        }
+    function handleSecretCode() {
+      const code = secretCodeInput.value.trim();
+      if (code === SECRET_CODE) {
+        closeCreditsModal();
+        chatContainer.style.display = 'block';
+        // Scroll to chat
+        chatContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        secretCodeInput.style.borderColor = '#d32f2f';
+        setTimeout(() => secretCodeInput.style.borderColor = '#e0e0e0', 1000);
+        alert("Incorrect code. Please verify and try again.");
+      }
+    }
 
-        function renderHistoryPreview() {
-            historyList.innerHTML = '';
-            
-            if (chatHistory.length === 0) {
-                historyList.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 1rem;">No chat history yet. Start a conversation!</p>';
-                return;
-            }
-            
-            // Show last 5 conversations
-            const recentHistory = chatHistory.slice(0, 5);
-            
-            recentHistory.forEach(session => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                
-                // Convert timestamp to readable format
-                let date, time;
-                if (session.timestamp?.toDate) {
-                    // Firestore timestamp
-                    const timestamp = session.timestamp.toDate();
-                    date = timestamp.toLocaleDateString();
-                    time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                } else {
-                    // Fallback for local timestamp
-                    const timestamp = new Date(session.timestamp);
-                    date = timestamp.toLocaleDateString();
-                    time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                }
-                
-                historyItem.innerHTML = `
-                    <strong>${date} at ${time}</strong>
-                    <p style="margin: 0.5rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">You: ${session.user}</p>
-                    <p style="margin: 0.5rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--primary);">Pengi: ${session.bot.substring(0, 40)}${session.bot.length > 40 ? '...' : ''}</p>
-                `;
-                historyItem.dataset.id = session.id;
-                historyItem.addEventListener('click', () => loadHistorySession(session.id));
-                historyList.appendChild(historyItem);
-            });
-        }
+    // 💬 Chat System
+    function handleUserMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
 
-        function loadHistorySession(sessionId) {
-            const session = chatHistory.find(s => s.id === sessionId);
-            if (!session) return;
-            
-            // Clear current chat
-            chatMessages.innerHTML = '';
-            
-            // Add historical messages
-            addMessage(session.user, 'user');
-            addMessage(session.bot, 'bot');
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+      addMessageToChat(message, 'user');
+      userInput.value = '';
+      chatHistory.push({ role: 'user', content: message });
 
-        function saveCurrentChat() {
-            if (!isLoggedIn) {
-                showToast('Please log in to save your chat history', 'info');
-                return;
-            }
-            
-            if (chatMessages.children.length < 2) {
-                showToast('No messages to save yet. Start a conversation first!', 'info');
-                return;
-            }
-            
-            // Get the last message exchange
-            const messages = chatMessages.querySelectorAll('.message');
-            const lastUserMsg = messages[messages.length - 2].querySelector('p').textContent;
-            const lastBotMsg = messages[messages.length - 1].querySelector('p').textContent;
-            
-            saveToHistory(lastUserMsg, lastBotMsg);
-        }
+      // Show loading
+      showLoading();
 
-        function clearChat() {
-            if (chatMessages.children.length < 2) return;
-            
-            if (confirm('Are you sure you want to clear the current chat? This cannot be undone.')) {
-                chatMessages.innerHTML = `
-                    <div class="message bot-message">
-                        <p>Hello! I'm Pengi, your penguin AI assistant. I'm here to chat about penguins, Antarctica, conservation, or anything else you'd like to discuss. What's on your mind today?</p>
-                        <div class="message-time">${getCurrentTime()}</div>
-                    </div>
-                `;
-                hasUnsavedMessages = false;
-                showToast('Chat cleared successfully', 'success');
-            }
-        }
+      // Determine which AI model to simulate
+      const isBestModel = isPremium; // Premium = best model
 
-        async function handleUpgradeConfirm() {
-            if (!isLoggedIn || !currentUser) {
-                showToast('Please log in to upgrade your account', 'info');
-                hideModal(upgradeModal);
-                return;
-            }
-            
-            // Show loading spinner
-            document.getElementById('upgrade-spinner').style.display = 'inline-block';
-            confirmUpgrade.disabled = true;
-            
-            try {
-                // Upgrade user in Firestore
-                await db.collection('users').doc(currentUser.uid).update({
-                    isPremium: true
-                });
-                
-                // Update local state
-                isPremium = true;
-                currentUser.isPremium = true;
-                
-                // Update UI
-                updateAuthUI();
-                showToast('Congratulations! Your account has been upgraded to Premium status.', 'success');
-                
-                // Hide modal
-                hideModal(upgradeModal);
-            } catch (error) {
-                console.error("Error upgrading account:", error);
-                showToast('Failed to upgrade account. Please try again.', 'error');
-            } finally {
-                document.getElementById('upgrade-spinner').style.display = 'none';
-                confirmUpgrade.disabled = false;
-            }
-        }
+      // Simulate AI response delay
+      setTimeout(() => {
+        hideLoading();
+        let response = generateAIResponse(message, isBestModel);
+        addMessageToChat(response, 'bot');
+        chatHistory.push({ role: 'bot', content: response });
+      }, isBestModel ? 600 : 1200); // Premium = faster response
+    }
 
-        // UI helpers
-        function showModal(modal) {
-            modal.style.display = 'flex';
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
-            document.body.style.overflow = 'hidden';
-        }
+    function addMessageToChat(text, sender) {
+      const div = document.createElement('div');
+      div.className = `message ${sender}-message`;
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-        function hideModal(modal) {
-            modal.classList.remove('show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }, 300);
-        }
+    function generateAIResponse(query, useBestModel) {
+      // Simulate "second best" vs "best" AI
+      const baseResponses = [
+        "Penguins are flightless seabirds found almost exclusively in the Southern Hemisphere.",
+        "The Emperor Penguin is the tallest species, reaching up to 1.2 meters (4 feet) tall.",
+        "Penguins have a special gland above their eyes that filters salt from seawater.",
+        "A group of penguins on land is called a 'waddle', and in water they're called a 'raft'.",
+        "Penguins can drink seawater thanks to their supraorbital gland that removes salt.",
+        "The Galápagos penguin is the only species found north of the equator."
+      ];
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            
-            themeToggle.innerHTML = newTheme === 'dark' ? 
-                '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-        }
+      const premiumResponses = [
+        ...baseResponses,
+        "Emperor penguins can dive deeper than any other bird — up to 564 meters (1,850 feet)! They can stay underwater for over 20 minutes.",
+        "Penguin feathers are densely packed (up to 100 per square inch) and coated with oil for waterproofing and insulation.",
+        "During courtship, Adélie penguins present pebbles to their mates — the perfect pebble can win a partner for life!",
+        "Climate change is causing Antarctic sea ice to decline, threatening Emperor penguin breeding habitats. Some colonies may decline by 80% by 2100.",
+        "Penguins can recognize their mates and chicks by unique vocal calls — even in colonies of thousands!",
+        "Little Blue Penguins (Eudyptula minor) cross busy roads in Australia at night — conservationists have built 'penguin highways' to protect them."
+      ];
 
-        function showChatInterface() {
-            chatContainer.style.display = 'block';
-            
-            // Scroll to chat container
-            setTimeout(() => {
-                chatContainer.scrollIntoView({ behavior: 'smooth' });
-            }, 300);
-        }
+      const responses = useBestModel ? premiumResponses : baseResponses;
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
 
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/service-worker.js')
-                        .then(registration => {
-                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                        })
-                        .catch(error => {
-                            console.log('ServiceWorker registration failed: ', error);
-                        });
-                });
-            }
-        }
+    function showLoading() {
+      loadingIndicator.style.display = 'block';
+      sendBtn.disabled = true;
+    }
 
-        // Initialize the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+    function hideLoading() {
+      loadingIndicator.style.display = 'none';
+      sendBtn.disabled = false;
+    }
+
+    // 💾 Chat Saving
+    function saveCurrentChat() {
+      if (!currentUser) {
+        alert("You must be logged in to save chats!");
+        return;
+      }
+
+      if (chatHistory.length === 0) {
+        alert("No chat to save!");
+        return;
+      }
+
+      // In production: save to Firestore
+      
+      db.collection('users').doc(currentUser.uid).collection('chats').add({
+        messages: chatHistory,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // For demo: save to localStorage
+      const chats = JSON.parse(localStorage.getItem(`chats_${currentUser.uid}`) || '[]');
+      chats.push({
+        id: Date.now(),
+        messages: chatHistory,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem(`chats_${currentUser.uid}`, JSON.stringify(chats));
+
+      alert("Chat saved successfully! You can view it later.");
+    }
+
+    function loadSavedChats() {
+      if (!currentUser) return;
+      // In real app: fetch from Firestore
+      // For demo: just clear current chat
+      chatHistory = [];
+      chatMessages.innerHTML = '<div class="message bot-message">Welcome back! Ask me about penguins.</div>';
+    }
+
+    // ⭐ Premium Upgrade
+    function requestPremiumUpgrade() {
+      if (!currentUser) {
+        alert("Please log in first!");
+        return;
+      }
+
+      if (isPremium) {
+        alert("You're already a premium user!");
+        return;
+      }
+
+      // In production: create a request in Firestore
+      /*
+      db.collection('premiumRequests').add({
+        userId: currentUser.uid,
+        email: currentUser.email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'pending'
+      });
+      */
+
+      alert("Upgrade request sent to admin! You'll receive an email when approved.");
+      upgradeBanner.style.display = 'none';
+    }
+
+    // 👑 Admin Dashboard (Simulated)
+    function loadAdminDashboard() {
+      if (!isAdmin) return;
+
+      // In production: fetch users from Firestore
+      const mockUsers = [
+        { id: 'user123', name: 'Alex Johnson', email: 'alex@example.com', isPremium: false },
+        { id: 'user456', name: 'Sam Rivera', email: 'sam@example.com', isPremium: true },
+        { id: 'user789', name: 'Taylor Kim', email: 'taylor@example.com', isPremium: false }
+      ];
+
+      userList.innerHTML = '';
+      mockUsers.forEach(user => {
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-item';
+        userDiv.innerHTML = `
+          <div class="user-info">
+            <span>${user.name}</span>
+            <span class="email">${user.email}</span>
+          </div>
+          <button class="btn ${user.isPremium ? 'btn-outline' : 'btn-primary'}" 
+                  onclick="togglePremium('${user.id}', this, ${user.isPremium})">
+            ${user.isPremium ? 'Revoke Premium' : 'Grant Premium'}
+          </button>
+        `;
+        userList.appendChild(userDiv);
+      });
+    }
+
+    // Global function for admin buttons
+    window.togglePremium = function(userId, button, isCurrentlyPremium) {
+      const newStatus = !isCurrentlyPremium;
+      
+      // In production: update user doc in Firestore
+      /*
+      db.collection('users').doc(userId).update({ isPremium: newStatus });
+      */
+
+      // Update UI
+      button.textContent = newStatus ? 'Revoke Premium' : 'Grant Premium';
+      button.className = `btn ${newStatus ? 'btn-outline' : 'btn-primary'}`;
+      
+      // Update local storage for demo
+      if (currentUser && currentUser.uid === userId) {
+        localStorage.setItem(`premium_${userId}`, String(newStatus));
+        isPremium = newStatus;
+        checkUserRoles(); // Refresh UI
+      }
+
+      alert(`${newStatus ? 'Premium granted' : 'Premium revoked'} for user ${userId}`);
+    };
+
+    // 🔐 Sign Out
+    function signOutUser() {
+      auth.signOut().then(() => {
+        // State reset handled by onAuthStateChanged
+      }).catch(err => {
+        console.error("Sign out error:", err);
+        alert("Error signing out. Please try again.");
+      });
+    }
+
+    // Start the app
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
 </body>
 </html>
