@@ -224,7 +224,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.08" d="M0,64L48,80C96,96,192,128,288,122.7C384,117,480,75,576,64C672,53,768,75,864,106.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background: url('image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.08" d="M0,64L48,80C96,96,192,128,288,122.7C384,117,480,75,576,64C672,53,768,75,864,106.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
             background-size: cover;
             background-position: bottom;
             z-index: 1;
@@ -1316,6 +1316,13 @@
             margin-right: 10px;
         }
         
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -1441,6 +1448,72 @@
                 width: 95%;
                 padding: 1.5rem;
             }
+        }
+        
+        /* Firebase UI Styling */
+        .firebaseui-container {
+            margin: 0 auto;
+            max-width: 400px;
+        }
+        
+        .firebaseui-idp-google {
+            background-color: #de5246 !important;
+            border-color: #de5246 !important;
+        }
+        
+        .firebaseui-idp-google:hover {
+            background-color: #c5493f !important;
+        }
+        
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            color: var(--dark);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 9999;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            border-left-color: var(--secondary);
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        .toast-close {
+            margin-left: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Network status indicator */
+        .network-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #ef4444;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            z-index: 9999;
+            display: none;
         }
     </style>
 </head>
@@ -1787,31 +1860,13 @@
             <p>Enter your credentials to access premium features and save your chat history</p>
             
             <div class="modal-form">
-                <input type="email" class="modal-input" id="login-email" placeholder="Your email address">
-                <input type="password" class="modal-input" id="login-password" placeholder="Your password">
-                
-                <div style="text-align: left; margin: 1rem 0;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="remember-me" style="width: 18px; height: 18px;">
-                        <span>Remember me</span>
-                    </label>
-                </div>
-                
-                <div class="modal-btns">
-                    <button class="btn btn-outline" id="cancel-login">Cancel</button>
-                    <button class="btn" id="submit-login">
-                        <span id="login-spinner" style="display: none;" class="loading"></span>
-                        Login
-                    </button>
+                <div id="firebaseui-auth-container"></div>
+                <div id="firebaseui-auth-spinner" class="loading-container">
+                    <div class="loading"></div>
                 </div>
                 
                 <div style="margin-top: 1.5rem; text-align: center;">
                     <p>Don't have an account? <a href="#" id="switch-to-signup" style="color: var(--gold); font-weight: 600; text-decoration: none;">Sign up here</a></p>
-                    <p style="margin-top: 0.5rem;">
-                        <a href="#" id="forgot-password" style="color: #94a3b8; text-decoration: none; font-size: 0.95rem;">
-                            <i class="fas fa-question-circle"></i> Forgot password?
-                        </a>
-                    </p>
                 </div>
             </div>
         </div>
@@ -1931,7 +1986,77 @@
         </div>
     </div>
 
+    <!-- Toast notifications -->
+    <div class="toast" id="toast-notification">
+        <span id="toast-message">Notification message</span>
+        <span class="toast-close" id="toast-close">&times;</span>
+    </div>
+    
+    <!-- Network status indicator -->
+    <div class="network-status" id="network-status">Offline</div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- FirebaseUI for Auth -->
+    <script src="https://cdn.jsdelivr.net/npm/firebaseui@6.1.0/dist/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firebaseui@6.1.0/dist/firebaseui.css" />
+    
     <script>
+        // Firebase Configuration - REPLACE WITH YOUR ACTUAL CONFIG
+        const firebaseConfig = {
+  apiKey: "AIzaSyA-7KtFeFcUndaOxdYxjTAzTsaBKvuOdDA",
+  authDomain: "nexus-2842a.firebaseapp.com",
+  projectId: "nexus-2842a",
+  storageBucket: "nexus-2842a.firebasestorage.app",
+  messagingSenderId: "888654157334",
+  appId: "1:888654157334:web:9178855888bff2aaeac737",
+  measurementId: "G-9F4JH2NYR0"
+};
+        
+        // Initialize Firebase
+        let app, auth, db, storage;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            storage = firebase.storage();
+            
+            console.log("Firebase initialized successfully");
+            
+            // Firebase settings
+            db.settings({ ignoreUndefinedProperties: true });
+            
+            // Offline persistence
+            db.enablePersistence()
+                .catch((err) => {
+                    console.error("Persistence error:", err);
+                    if (err.code === 'failed-precondition') {
+                        console.log("Multiple tabs open, persistence can only be enabled in one tab at a time.");
+                    } else if (err.code === 'unimplemented') {
+                        console.log("Browser doesn't support persistence.");
+                    }
+                });
+                
+            // Enable offline disk caching
+            firebase.firestore().enablePersistence({ synchronizeTabs: true })
+                .catch(err => {
+                    console.warn("Disk persistence not enabled:", err);
+                });
+                
+            // Setup network monitoring
+            window.addEventListener('online', updateNetworkStatus);
+            window.addEventListener('offline', updateNetworkStatus);
+            updateNetworkStatus();
+            
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            showToast("Failed to initialize Firebase. Please check your connection.", "error");
+        }
+        
         // DOM Elements
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const navMenu = document.getElementById('nav-menu');
@@ -1952,18 +2077,14 @@
         const signupModal = document.getElementById('signup-modal');
         const creditsModal = document.getElementById('credits-modal');
         const upgradeModal = document.getElementById('upgrade-modal');
-        const submitLogin = document.getElementById('submit-login');
         const submitSignup = document.getElementById('submit-signup');
         const submitAccess = document.getElementById('submit-access');
         const confirmUpgrade = document.getElementById('confirm-upgrade');
-        const cancelLogin = document.getElementById('cancel-login');
         const cancelSignup = document.getElementById('cancel-signup');
         const cancelAccess = document.getElementById('cancel-access');
         const cancelUpgrade = document.getElementById('cancel-upgrade');
         const switchToSignup = document.getElementById('switch-to-signup');
         const switchToLogin = document.getElementById('switch-to-login');
-        const loginEmail = document.getElementById('login-email');
-        const loginPassword = document.getElementById('login-password');
         const signupUsername = document.getElementById('signup-username');
         const signupEmail = document.getElementById('signup-email');
         const signupPassword = document.getElementById('signup-password');
@@ -1998,6 +2119,10 @@
         const activeUsersEl = document.getElementById('active-users');
         const chatsCountEl = document.getElementById('chats-count');
         const userListEl = document.getElementById('user-list');
+        const toastNotification = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const toastClose = document.getElementById('toast-close');
+        const networkStatus = document.getElementById('network-status');
 
         // State variables
         let isLoggedIn = false;
@@ -2012,13 +2137,7 @@
             free: "facebook/blenderbot-400M-distill",
             premium: "microsoft/DialoGPT-medium"
         };
-
-        // Firebase initialization (simulated for this demo)
-        console.log("Firebase initialized in production mode");
-        console.log("Using Firebase Emulator Suite for development");
-        console.log("Connected to Cloud Firestore database: penguin-paradise");
-        console.log("Authentication providers enabled: Google, Email/Password");
-        console.log("Cloud Storage bucket: penguin-paradise.appspot.com");
+        let firebaseUi = null;
 
         // Initialize the app
         function init() {
@@ -2031,21 +2150,11 @@
             themeToggle.innerHTML = savedTheme === 'dark' ? 
                 '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
             
-            // Load user data from localStorage (simulating Firebase persistence)
-            const savedUser = JSON.parse(localStorage.getItem('currentUser'));
-            if (savedUser) {
-                handleLogin(savedUser);
-            }
-            
-            // Load chat history
-            chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-            renderHistoryPreview();
-            
-            // Simulate user statistics
-            updateDashboardStats();
-            
-            // Add event listeners
+            // Setup event listeners
             setupEventListeners();
+            
+            // Setup toast notifications
+            setupToast();
             
             // Check for URL parameters
             checkUrlParams();
@@ -2053,10 +2162,102 @@
             // Register service worker for PWA
             registerServiceWorker();
             
-            // Initialize Firebase Analytics (simulated)
-            console.log("Firebase Analytics: Page view tracked - Home");
+            // Setup Firebase authentication state observer
+            setupAuthStateObserver();
         }
-
+        
+        function setupAuthStateObserver() {
+            if (!auth) return;
+            
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    // User is signed in
+                    try {
+                        // Get user document from Firestore
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            const isAdminUser = user.email === adminEmail;
+                            
+                            // Update state
+                            isLoggedIn = true;
+                            currentUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                username: userData.username || user.email.split('@')[0],
+                                isPremium: userData.isPremium || isAdminUser,
+                                lastLogin: new Date().toISOString(),
+                                isAdmin: isAdminUser
+                            };
+                            
+                            isAdmin = isAdminUser;
+                            isPremium = currentUser.isPremium;
+                            
+                            // Update UI
+                            updateAuthUI();
+                            
+                            // Load chat history
+                            loadChatHistory();
+                            
+                            // Update dashboard stats
+                            if (isAdmin) updateDashboardStats();
+                            
+                            showToast(`Welcome back, ${currentUser.username}!`, "success");
+                        } else {
+                            // New user - create profile
+                            const username = user.email.split('@')[0];
+                            const userRef = db.collection('users').doc(user.uid);
+                            
+                            await userRef.set({
+                                username: username,
+                                email: user.email,
+                                isPremium: false,
+                                dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
+                                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            // Update state
+                            isLoggedIn = true;
+                            currentUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                username: username,
+                                isPremium: false,
+                                lastLogin: new Date().toISOString(),
+                                isAdmin: user.email === adminEmail
+                            };
+                            
+                            isAdmin = currentUser.isAdmin;
+                            isPremium = currentUser.isPremium;
+                            
+                            // Update UI
+                            updateAuthUI();
+                            showToast(`Welcome to Penguin Paradise, ${username}!`, "success");
+                        }
+                        
+                        // Update last login timestamp
+                        await db.collection('users').doc(user.uid).update({
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                    } catch (error) {
+                        console.error("Error handling auth state:", error);
+                        showToast("Error loading user profile. Please try again.", "error");
+                    }
+                } else {
+                    // User is signed out
+                    isLoggedIn = false;
+                    isAdmin = false;
+                    isPremium = false;
+                    currentUser = null;
+                    
+                    // Update UI
+                    updateAuthUI();
+                }
+            });
+        }
+        
         function setupEventListeners() {
             // Mobile menu toggle
             mobileMenuBtn.addEventListener('click', () => {
@@ -2088,7 +2289,6 @@
             closeSignupModal.addEventListener('click', () => hideModal(signupModal));
             closeCreditsModal.addEventListener('click', () => hideModal(creditsModal));
             closeUpgradeModal.addEventListener('click', () => hideModal(upgradeModal));
-            cancelLogin.addEventListener('click', () => hideModal(loginModal));
             cancelSignup.addEventListener('click', () => hideModal(signupModal));
             cancelAccess.addEventListener('click', () => hideModal(creditsModal));
             cancelUpgrade.addEventListener('click', () => hideModal(upgradeModal));
@@ -2104,7 +2304,6 @@
             });
             
             // Form submissions
-            submitLogin.addEventListener('click', handleLoginSubmit);
             submitSignup.addEventListener('click', handleSignupSubmit);
             submitAccess.addEventListener('click', handleAccessSubmit);
             confirmUpgrade.addEventListener('click', handleUpgradeConfirm);
@@ -2144,65 +2343,59 @@
                 }
             });
         }
-
-        // Authentication functions
-        function handleLoginSubmit() {
-            const email = loginEmail.value.trim();
-            const password = loginPassword.value.trim();
+        
+        function setupToast() {
+            toastClose.addEventListener('click', () => {
+                toastNotification.classList.remove('show');
+            });
             
-            if (!email || !password) {
-                alert('Please enter both email and password');
-                return;
+            // Auto-hide after 5 seconds
+            setInterval(() => {
+                if (toastNotification.classList.contains('show')) {
+                    toastNotification.classList.remove('show');
+                }
+            }, 5000);
+        }
+        
+        function showToast(message, type = 'info') {
+            toastMessage.textContent = message;
+            toastNotification.className = `toast ${type}`;
+            toastNotification.classList.add('show');
+        }
+        
+        function updateNetworkStatus() {
+            if (navigator.onLine) {
+                networkStatus.style.display = 'none';
+            } else {
+                networkStatus.style.display = 'block';
             }
-            
-            // Show loading spinner
-            document.getElementById('login-spinner').style.display = 'inline-block';
-            submitLogin.disabled = true;
-            
-            // Simulate Firebase authentication
-            setTimeout(() => {
-                // For demo purposes, accept any credentials
-                const mockUser = {
-                    username: email.split('@')[0],
-                    email: email,
-                    isPremium: email === adminEmail ? true : false,
-                    uid: 'user_' + Math.random().toString(36).substr(2, 9),
-                    lastLogin: new Date().toISOString()
-                };
-                
-                handleLogin(mockUser);
-                hideModal(loginModal);
-                showChatInterface();
-                
-                // Reset form
-                loginEmail.value = '';
-                loginPassword.value = '';
-                document.getElementById('login-spinner').style.display = 'none';
-                submitLogin.disabled = false;
-                
-                console.log("Firebase Auth: User signed in successfully");
-                console.log("User profile loaded from Firestore");
-            }, 1200);
         }
 
+        // Authentication functions
         function handleSignupSubmit() {
             const username = signupUsername.value.trim();
             const email = signupEmail.value.trim();
             const password = signupPassword.value.trim();
             const confirm = signupConfirm.value.trim();
+            const termsAgreed = document.getElementById('terms-agree').checked;
             
             if (!username || !email || !password || !confirm) {
-                alert('Please fill all fields');
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+            
+            if (!termsAgreed) {
+                showToast('You must agree to the Terms of Service and Privacy Policy', 'error');
                 return;
             }
             
             if (password !== confirm) {
-                alert('Passwords do not match');
+                showToast('Passwords do not match', 'error');
                 return;
             }
             
             if (password.length < 6) {
-                alert('Password must be at least 6 characters');
+                showToast('Password must be at least 6 characters', 'error');
                 return;
             }
             
@@ -2210,69 +2403,67 @@
             document.getElementById('signup-spinner').style.display = 'inline-block';
             submitSignup.disabled = true;
             
-            // Simulate Firebase signup
-            setTimeout(() => {
-                const mockUser = {
-                    username: username,
-                    email: email,
-                    isPremium: false,
-                    uid: 'user_' + Math.random().toString(36).substr(2, 9),
-                    dateCreated: new Date().toISOString(),
-                    lastLogin: new Date().toISOString()
-                };
-                
-                handleLogin(mockUser);
-                hideModal(signupModal);
-                showChatInterface();
-                
-                // Reset form
-                signupUsername.value = '';
-                signupEmail.value = '';
-                signupPassword.value = '';
-                signupConfirm.value = '';
-                document.getElementById('signup-spinner').style.display = 'none';
-                submitSignup.disabled = false;
-                
-                console.log("Firebase Auth: New user created successfully");
-                console.log("User profile saved to Firestore");
-            }, 1500);
-        }
-
-        function handleLogin(user) {
-            isLoggedIn = true;
-            currentUser = user;
-            isPremium = user.isPremium || false;
-            isAdmin = user.email === adminEmail;
-            
-            // Save to localStorage (simulating Firebase persistence)
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            
-            // Update UI
-            updateAuthUI();
-            updateDashboardStats();
-            
-            // Show admin dashboard if admin
-            if (isAdmin) {
-                adminDashboard.style.display = 'block';
-                loadAllUsers();
-            }
-            
-            console.log("User session established with UID:", user.uid);
+            // Create user with email/password
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(async (userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Create user document in Firestore
+                    await db.collection('users').doc(user.uid).set({
+                        username: username,
+                        email: email,
+                        isPremium: false,
+                        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Send email verification
+                    await user.sendEmailVerification();
+                    
+                    // Hide modal and reset form
+                    hideModal(signupModal);
+                    signupUsername.value = '';
+                    signupEmail.value = '';
+                    signupPassword.value = '';
+                    signupConfirm.value = '';
+                    document.getElementById('signup-spinner').style.display = 'none';
+                    submitSignup.disabled = false;
+                    
+                    showToast('Account created successfully! Please check your email for verification.', 'success');
+                })
+                .catch((error) => {
+                    console.error("Signup error:", error);
+                    let errorMessage = 'Failed to create account. ';
+                    
+                    switch (error.code) {
+                        case 'auth/email-already-in-use':
+                            errorMessage += 'This email is already registered.';
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage += 'Invalid email format.';
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage += 'Password is too weak.';
+                            break;
+                        default:
+                            errorMessage += 'Please try again later.';
+                    }
+                    
+                    showToast(errorMessage, 'error');
+                    document.getElementById('signup-spinner').style.display = 'none';
+                    submitSignup.disabled = false;
+                });
         }
 
         function handleLogout() {
-            isLoggedIn = false;
-            isAdmin = false;
-            isPremium = false;
-            currentUser = null;
-            
-            localStorage.removeItem('currentUser');
-            
-            // Update UI
-            updateAuthUI();
-            adminDashboard.style.display = 'none';
-            
-            console.log("User signed out successfully");
+            auth.signOut()
+                .then(() => {
+                    showToast('You have been logged out successfully', 'success');
+                })
+                .catch((error) => {
+                    console.error("Logout error:", error);
+                    showToast('Error signing out. Please try again.', 'error');
+                });
         }
 
         function updateAuthUI() {
@@ -2298,11 +2489,16 @@
                     chatPremiumStatus.classList.add('gold');
                     aiModelStatus.textContent = 'Premium AI Model';
                     aiModelStatus.style.color = 'var(--gold)';
-                    document.getElementById('dropdown-premium-status')?.classList.add('gold');
                     
                     // Show premium features
                     premiumUpgradeChatBtn.style.display = 'none';
                     upgradeAccountBtn.style.display = 'none';
+                    
+                    // Show admin dashboard if admin
+                    if (isAdmin) {
+                        adminDashboard.style.display = 'block';
+                        loadAllUsers();
+                    }
                 } else {
                     dropdownPremiumStatus.textContent = 'Free User';
                     dropdownPremiumStatus.classList.remove('gold');
@@ -2310,11 +2506,13 @@
                     chatPremiumStatus.classList.remove('gold');
                     aiModelStatus.textContent = 'Standard AI Model';
                     aiModelStatus.style.color = '';
-                    document.getElementById('dropdown-premium-status')?.classList.remove('gold');
                     
                     // Show upgrade button
                     premiumUpgradeChatBtn.style.display = 'block';
                     upgradeAccountBtn.style.display = 'block';
+                    
+                    // Hide admin dashboard
+                    adminDashboard.style.display = 'none';
                 }
             } else {
                 // Show login/signup buttons, hide user menu
@@ -2425,41 +2623,87 @@
             "default": "Thank you for your question! As a premium user, I have access to an extensive knowledge base about penguins, Antarctic ecosystems, and conservation science. I can provide detailed information on biology, behavior, habitats, threats, and protection efforts. Please feel free to ask anything specific you'd like to know, and I'll give you the most accurate, up-to-date information available."
         };
 
-        function saveToHistory(userMsg, botMsg) {
-            const chatSession = {
-                id: Date.now(),
-                timestamp: new Date().toISOString(),
-                user: userMsg,
-                bot: botMsg,
-                userId: currentUser.uid
-            };
+        async function saveToHistory(userMsg, botMsg) {
+            if (!isLoggedIn || !currentUser) return;
             
-            chatHistory.unshift(chatSession);
-            if (chatHistory.length > 100) chatHistory.pop(); // Limit history size
+            try {
+                const chatSession = {
+                    id: Date.now().toString(),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    user: userMsg,
+                    bot: botMsg,
+                    userId: currentUser.uid
+                };
+                
+                // Save to Firestore
+                await db.collection('chathistory').doc(chatSession.id).set(chatSession);
+                
+                // Update local history
+                chatHistory.unshift(chatSession);
+                if (chatHistory.length > 100) chatHistory.pop(); // Limit history size
+                
+                renderHistoryPreview();
+                hasUnsavedMessages = false;
+                
+                showToast('Chat saved successfully!', 'success');
+            } catch (error) {
+                console.error("Error saving chat history:", error);
+                showToast('Failed to save chat. Please try again.', 'error');
+            }
+        }
+
+        async function loadChatHistory() {
+            if (!isLoggedIn || !currentUser) return;
             
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-            renderHistoryPreview();
-            hasUnsavedMessages = false;
-            
-            console.log("Firestore: Chat history saved successfully");
+            try {
+                const historyRef = db.collection('chathistory')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .limit(100);
+                
+                const snapshot = await historyRef.get();
+                chatHistory = [];
+                
+                snapshot.forEach(doc => {
+                    chatHistory.push(doc.data());
+                });
+                
+                renderHistoryPreview();
+            } catch (error) {
+                console.error("Error loading chat history:", error);
+                showToast('Failed to load chat history. Please try again.', 'error');
+            }
         }
 
         function renderHistoryPreview() {
             historyList.innerHTML = '';
             
-            // Show last 5 conversations
-            const recentHistory = chatHistory.slice(0, 5);
-            
-            if (recentHistory.length === 0) {
+            if (chatHistory.length === 0) {
                 historyList.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 1rem;">No chat history yet. Start a conversation!</p>';
                 return;
             }
             
+            // Show last 5 conversations
+            const recentHistory = chatHistory.slice(0, 5);
+            
             recentHistory.forEach(session => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
-                const date = new Date(session.timestamp).toLocaleDateString();
-                const time = new Date(session.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                // Convert timestamp to readable format
+                let date, time;
+                if (session.timestamp?.toDate) {
+                    // Firestore timestamp
+                    const timestamp = session.timestamp.toDate();
+                    date = timestamp.toLocaleDateString();
+                    time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    // Fallback for local timestamp
+                    const timestamp = new Date(session.timestamp);
+                    date = timestamp.toLocaleDateString();
+                    time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+                
                 historyItem.innerHTML = `
                     <strong>${date} at ${time}</strong>
                     <p style="margin: 0.5rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">You: ${session.user}</p>
@@ -2472,7 +2716,7 @@
         }
 
         function loadHistorySession(sessionId) {
-            const session = chatHistory.find(s => s.id === parseInt(sessionId));
+            const session = chatHistory.find(s => s.id === sessionId);
             if (!session) return;
             
             // Clear current chat
@@ -2488,13 +2732,13 @@
 
         function saveCurrentChat() {
             if (!isLoggedIn) {
-                alert('Please log in to save your chat history');
+                showToast('Please log in to save your chat history', 'info');
                 showModal(loginModal);
                 return;
             }
             
             if (chatMessages.children.length < 2) {
-                alert('No messages to save yet. Start a conversation first!');
+                showToast('No messages to save yet. Start a conversation first!', 'info');
                 return;
             }
             
@@ -2504,7 +2748,6 @@
             const lastBotMsg = messages[messages.length - 1].querySelector('p').textContent;
             
             saveToHistory(lastUserMsg, lastBotMsg);
-            alert('Chat saved successfully! You can view your history anytime.');
         }
 
         function clearChat() {
@@ -2518,60 +2761,69 @@
                     </div>
                 `;
                 hasUnsavedMessages = false;
+                showToast('Chat cleared successfully', 'success');
             }
         }
 
         function showAllHistory() {
             if (!isLoggedIn) {
-                alert('Please log in to view your chat history');
+                showToast('Please log in to view your chat history', 'info');
                 showModal(loginModal);
                 return;
             }
             
             if (chatHistory.length === 0) {
-                alert('You have no saved chat history yet. Start a conversation and save it!');
+                showToast('You have no saved chat history yet. Start a conversation and save it!', 'info');
                 return;
             }
             
             // In a real app, this would navigate to a dedicated history page
-            alert(`You have ${chatHistory.length} saved chat sessions. In the full application, this would open a dedicated history page with search and filtering capabilities.`);
+            showToast(`You have ${chatHistory.length} saved chat sessions.`, 'success');
         }
 
         // Admin functions
-        function handleAccessSubmit() {
+        async function handleAccessSubmit() {
             const code = accessCode.value.trim();
             if (code === accessKey) {
                 hideModal(creditsModal);
                 
                 if (isLoggedIn) {
-                    // Upgrade current user to premium
-                    isPremium = true;
-                    currentUser.isPremium = true;
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    
-                    // Update UI
-                    updateAuthUI();
-                    alert('Access granted! You now have premium features enabled.');
-                    
-                    // Show chat interface
-                    showChatInterface();
+                    try {
+                        // Upgrade current user to premium
+                        await db.collection('users').doc(currentUser.uid).update({
+                            isPremium: true
+                        });
+                        
+                        // Update local state
+                        isPremium = true;
+                        currentUser.isPremium = true;
+                        
+                        // Update UI
+                        updateAuthUI();
+                        showToast('Access granted! You now have premium features enabled.', 'success');
+                        
+                        // Show chat interface
+                        showChatInterface();
+                    } catch (error) {
+                        console.error("Error upgrading user:", error);
+                        showToast('Failed to grant premium access. Please try again.', 'error');
+                    }
                 } else {
-                    alert('Access code verified! Please log in to unlock premium features.');
+                    showToast('Access code verified! Please log in to unlock premium features.', 'info');
                     showModal(loginModal);
                 }
                 
                 accessCode.value = '';
-                console.log("Admin access granted with code:", accessKey);
             } else {
-                alert('Incorrect access code. Please try again.');
+                showToast('Incorrect access code. Please try again.', 'error');
                 accessCode.value = '';
                 accessCode.focus();
             }
         }
 
-        function handleUpgradeConfirm() {
-            if (!isLoggedIn) {
-                alert('Please log in to upgrade your account');
+        async function handleUpgradeConfirm() {
+            if (!isLoggedIn || !currentUser) {
+                showToast('Please log in to upgrade your account', 'info');
                 hideModal(upgradeModal);
                 showModal(loginModal);
                 return;
@@ -2581,100 +2833,136 @@
             document.getElementById('upgrade-spinner').style.display = 'inline-block';
             confirmUpgrade.disabled = true;
             
-            // Simulate upgrade process
-            setTimeout(() => {
+            try {
+                // Upgrade user in Firestore
+                await db.collection('users').doc(currentUser.uid).update({
+                    isPremium: true
+                });
+                
+                // Update local state
                 isPremium = true;
                 currentUser.isPremium = true;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
                 // Update UI
                 updateAuthUI();
-                renderHistoryPreview();
+                showToast('Congratulations! Your account has been upgraded to Premium status.', 'success');
                 
                 // Hide modal
                 hideModal(upgradeModal);
+            } catch (error) {
+                console.error("Error upgrading account:", error);
+                showToast('Failed to upgrade account. Please try again.', 'error');
+            } finally {
                 document.getElementById('upgrade-spinner').style.display = 'none';
                 confirmUpgrade.disabled = false;
-                
-                alert('Congratulations! Your account has been upgraded to Premium status. You now have access to advanced AI capabilities and unlimited chat history.');
-                console.log("Firestore: User upgraded to premium status");
-            }, 1200);
+            }
         }
 
-        function handleManualUpgrade() {
+        async function handleManualUpgrade() {
             if (!isAdmin) {
-                alert('Only admins can grant premium status to users');
+                showToast('Only admins can grant premium status to users', 'error');
                 return;
             }
             
             const email = userEmailInput.value.trim().toLowerCase();
             if (!email || !email.includes('@')) {
-                alert('Please enter a valid email address');
+                showToast('Please enter a valid email address', 'error');
                 return;
             }
             
-            if (email === currentUser.email) {
-                alert('You are already a premium user!');
-                return;
+            try {
+                // Find user by email
+                const usersRef = db.collection('users');
+                const query = usersRef.where('email', '==', email).limit(1);
+                const snapshot = await query.get();
+                
+                if (snapshot.empty) {
+                    showToast('No user found with this email address', 'error');
+                    return;
+                }
+                
+                // Get user document
+                const userDoc = snapshot.docs[0];
+                const user = userDoc.data();
+                
+                if (user.isPremium) {
+                    showToast(`${user.username} is already a premium user!`, 'info');
+                    return;
+                }
+                
+                // Upgrade user
+                await usersRef.doc(userDoc.id).update({
+                    isPremium: true
+                });
+                
+                // Clear input
+                userEmailInput.value = '';
+                
+                // Show success message
+                showToast(`Premium access has been granted to ${user.username}!`, 'success');
+                
+                // Update UI
+                updateDashboardStats();
+                loadAllUsers();
+            } catch (error) {
+                console.error("Error granting premium access:", error);
+                showToast('Failed to grant premium access. Please try again.', 'error');
             }
+        }
+
+        async function updateDashboardStats() {
+            if (!isAdmin) return;
             
-            // Simulate finding user in database
-            const targetUser = {
-                username: email.split('@')[0],
-                email: email,
-                isPremium: true,
-                uid: 'user_' + Math.random().toString(36).substr(2, 9)
-            };
-            
-            // Add to users list
-            const existingIndex = users.findIndex(u => u.email === email);
-            if (existingIndex !== -1) {
-                users[existingIndex].isPremium = true;
-            } else {
-                users.push(targetUser);
+            try {
+                // Get total users
+                const usersSnapshot = await db.collection('users').get();
+                const totalUsers = usersSnapshot.size;
+                
+                // Get premium users
+                const premiumSnapshot = await db.collection('users').where('isPremium', '==', true).get();
+                const premiumUsers = premiumSnapshot.size;
+                
+                // Get active users (last login within 24 hours)
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const activeSnapshot = await db.collection('users')
+                    .where('lastLogin', '>', yesterday)
+                    .get();
+                const activeUsers = activeSnapshot.size;
+                
+                // Get total chats
+                const chatsSnapshot = await db.collection('chathistory').get();
+                const chatsCount = chatsSnapshot.size;
+                
+                // Update UI
+                totalUsersEl.textContent = totalUsers.toLocaleString();
+                premiumUsersEl.textContent = premiumUsers.toLocaleString();
+                activeUsersEl.textContent = activeUsers.toLocaleString();
+                chatsCountEl.textContent = chatsCount.toLocaleString();
+            } catch (error) {
+                console.error("Error updating dashboard stats:", error);
             }
-            
-            localStorage.setItem('allUsers', JSON.stringify(users));
-            userEmailInput.value = '';
-            
-            // Update UI
-            updateDashboardStats();
-            loadAllUsers();
-            
-            alert(`Premium access has been granted to ${targetUser.username}!`);
-            console.log(`Admin action: Granted premium status to ${email}`);
         }
 
-        function updateDashboardStats() {
-            // Simulate fetching stats from Firestore
-            const totalUsers = Math.floor(Math.random() * 50) + 150;
-            const premiumUsers = Math.floor(totalUsers * 0.15);
-            const activeUsers = Math.floor(totalUsers * 0.3);
-            const chatsCount = Math.floor(Math.random() * 200) + 800;
+        async function loadAllUsers() {
+            if (!isAdmin) return;
             
-            totalUsersEl.textContent = totalUsers.toLocaleString();
-            premiumUsersEl.textContent = premiumUsers.toLocaleString();
-            activeUsersEl.textContent = activeUsers.toLocaleString();
-            chatsCountEl.textContent = chatsCount.toLocaleString();
+            try {
+                const usersSnapshot = await db.collection('users').orderBy('dateCreated', 'desc').get();
+                const users = [];
+                
+                usersSnapshot.forEach(doc => {
+                    users.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderUserList(users);
+            } catch (error) {
+                console.error("Error loading users:", error);
+                showToast('Failed to load user list. Please try again.', 'error');
+            }
         }
 
-        let users = [];
-
-        function loadAllUsers() {
-            // Simulate fetching users from Firestore
-            users = [
-                { username: 'lkmukhil', email: adminEmail, isPremium: true, uid: 'admin_001', dateJoined: '2023-01-15' },
-                { username: 'penguinfan22', email: 'penguinfan22@example.com', isPremium: true, uid: 'user_002', dateJoined: '2023-02-20' },
-                { username: 'antarctic_explorer', email: 'explorer@example.com', isPremium: false, uid: 'user_003', dateJoined: '2023-03-10' },
-                { username: 'conservation_hero', email: 'hero@example.com', isPremium: false, uid: 'user_004', dateJoined: '2023-04-05' },
-                { username: 'wildlife_watcher', email: 'watcher@example.com', isPremium: true, uid: 'user_005', dateJoined: '2023-05-12' },
-                { username: 'ice_queen', email: 'icequeen@example.com', isPremium: false, uid: 'user_006', dateJoined: '2023-06-18' }
-            ];
-            
-            renderUserList();
-        }
-
-        function renderUserList() {
+        function renderUserList(users) {
             userListEl.innerHTML = '';
             
             users.forEach(user => {
@@ -2686,6 +2974,14 @@
                 const statusText = user.email === adminEmail ? 'Admin' : 
                                   user.isPremium ? 'Premium' : 'Free';
                 
+                // Format date
+                let dateJoined = 'Unknown';
+                if (user.dateCreated?.toDate) {
+                    dateJoined = user.dateCreated.toDate().toLocaleDateString();
+                } else if (user.dateCreated) {
+                    dateJoined = new Date(user.dateCreated).toLocaleDateString();
+                }
+                
                 userCard.innerHTML = `
                     <div class="user-header">
                         <div>
@@ -2695,6 +2991,7 @@
                         ${user.email === adminEmail ? '' : `
                         <button class="btn ${user.isPremium ? 'btn-outline' : 'btn-gold grant-premium'}" 
                                 ${user.isPremium ? 'disabled' : ''} 
+                                data-id="${user.id}"
                                 data-email="${user.email}">
                             ${user.isPremium ? 'Premium' : 'Grant Premium'}
                         </button>
@@ -2702,7 +2999,7 @@
                     </div>
                     <div class="user-email">${user.email}</div>
                     <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">
-                        Member since: ${new Date(user.dateJoined).toLocaleDateString()}
+                        Member since: ${dateJoined}
                     </div>
                 `;
                 
@@ -2711,12 +3008,21 @@
                 // Add event listener if not admin and not already premium
                 if (user.email !== adminEmail && !user.isPremium) {
                     const grantBtn = userCard.querySelector('.grant-premium');
-                    grantBtn.addEventListener('click', () => {
-                        user.isPremium = true;
-                        renderUserList();
-                        updateDashboardStats();
-                        alert(`Premium status granted to ${user.username}`);
-                        console.log(`Admin action: Granted premium to ${user.email}`);
+                    grantBtn.addEventListener('click', async () => {
+                        try {
+                            await db.collection('users').doc(user.id).update({
+                                isPremium: true
+                            });
+                            
+                            // Refresh user list
+                            loadAllUsers();
+                            updateDashboardStats();
+                            
+                            showToast(`Premium status granted to ${user.username}`, 'success');
+                        } catch (error) {
+                            console.error("Error granting premium:", error);
+                            showToast('Failed to grant premium status. Please try again.', 'error');
+                        }
                     });
                 }
             });
@@ -2729,6 +3035,11 @@
                 modal.classList.add('show');
             }, 10);
             document.body.style.overflow = 'hidden';
+            
+            // Initialize FirebaseUI for login modal
+            if (modal === loginModal && !firebaseUi) {
+                initFirebaseUI();
+            }
         }
 
         function hideModal(modal) {
@@ -2736,6 +3047,11 @@
             setTimeout(() => {
                 modal.style.display = 'none';
                 document.body.style.overflow = 'auto';
+                
+                // Reset FirebaseUI container
+                if (modal === loginModal) {
+                    document.getElementById('firebaseui-auth-container').innerHTML = '';
+                }
             }, 300);
         }
 
@@ -2748,8 +3064,6 @@
             
             themeToggle.innerHTML = newTheme === 'dark' ? 
                 '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-            
-            console.log(`Theme changed to ${newTheme} mode`);
         }
 
         function showChatInterface() {
@@ -2759,8 +3073,6 @@
             setTimeout(() => {
                 chatContainer.scrollIntoView({ behavior: 'smooth' });
             }, 300);
-            
-            console.log("Chat interface displayed");
         }
 
         function checkUrlParams() {
@@ -2789,74 +3101,38 @@
             }
         }
 
-        // Initialize the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
-
-        // Add this for PWA installation prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
+        function initFirebaseUI() {
+            // FirebaseUI config
+            const uiConfig = {
+                signInSuccessUrl: '#',
+                signInOptions: [
+                    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+                    {
+                        provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
+                        requireDisplayName: false
+                    }
+                ],
+                tosUrl: '#terms',
+                privacyPolicyUrl: '#privacy',
+                callbacks: {
+                    signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+                        // Handle successful sign-in
+                        return false; // Prevent redirect
+                    },
+                    uiShown: function() {
+                        // Hide the spinner
+                        document.getElementById('firebaseui-auth-spinner').style.display = 'none';
+                    }
+                }
+            };
             
-            // Show install prompt to user after 30 seconds
-            setTimeout(showInstallPrompt, 30000);
-        });
-
-        function showInstallPrompt() {
-            if (deferredPrompt) {
-                const installBanner = document.createElement('div');
-                installBanner.style.cssText = `
-                    position: fixed;
-                    bottom: 20px;
-                    left: 20px;
-                    right: 20px;
-                    background: white;
-                    border-radius: 12px;
-                    padding: 1rem;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    border: 1px solid #e2e8f0;
-                `;
-                installBanner.innerHTML = `
-                    <div>
-                        <strong>Install Penguin Paradise</strong>
-                        <p>Get the app for offline access and push notifications</p>
-                    </div>
-                    <button id="install-app-btn" style="
-                        background: var(--primary);
-                        color: white;
-                        border: none;
-                        padding: 0.6rem 1.2rem;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                    ">
-                        Install
-                    </button>
-                `;
-                document.body.appendChild(installBanner);
-                
-                document.getElementById('install-app-btn').addEventListener('click', () => {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                        } else {
-                            console.log('User dismissed the install prompt');
-                        }
-                        deferredPrompt = null;
-                        document.body.removeChild(installBanner);
-                    });
-                });
-            }
+            // Initialize the FirebaseUI Widget
+            firebaseUi = new firebaseui.auth.AuthUI(auth);
+            firebaseUi.start('#firebaseui-auth-container', uiConfig);
         }
 
-        // Simulate Firebase performance monitoring
-        console.log("Firebase Performance Monitoring: Page loaded in", (performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart), "ms");
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
