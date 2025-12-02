@@ -1,0 +1,10 @@
+{
+  "name": "Penquin",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@huggingface/inference": "^2.8.0"
+  }
+}
