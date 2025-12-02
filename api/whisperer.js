@@ -8,7 +8,10 @@ if (!HF_TOKEN) {
   throw new Error("Server misconfiguration");
 }
 
-const hf = new HfInference(HF_TOKEN);
+// ✅ Use the new router endpoint
+const hf = new HfInference(HF_TOKEN, {
+  baseUrl: 'https://router.huggingface.co' // ← NEW ENDPOINT
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -22,9 +25,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid prompt' });
     }
 
-    // Use a more reliable model that works out-of-the-box
+    // Use DialoGPT (more reliable for chat)
     const response = await hf.textGeneration({
-      model: "meta-llama/Llama-4-Scout-17B-16E-Instruct", // More stable than blenderbot
+      model: "meta-llama/Llama-4-Scout-17B-16E-Instruct",
       inputs: `User: ${prompt}\nBot:`,
       parameters: {
         max_new_tokens: 80,
@@ -39,7 +42,7 @@ export default async function handler(req, res) {
     
     // Clean response
     text = text
-      .split('\n')[0] // Take only first line
+      .split('\n')[0]
       .replace(/User:.*/gi, '')
       .replace(/Bot:/gi, '')
       .trim();
@@ -54,7 +57,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("🔥 Whisperer error:", error.message || error);
     
-    // Log specific Hugging Face errors
+    // Log specific errors
     if (error.message?.includes("Authorization")) {
       console.error("🔑 HUGGING_FACE_TOKEN is invalid or missing!");
     }
