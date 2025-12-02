@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     }
 
     // Use a more reliable model that works out-of-the-box
-    const response = await diumhf.textGeneration({
+    const response = await hf.textGeneration({
       model: "meta-llama/Llama-4-Scout-17B-16E-Instruct", // More stable than blenderbot
       inputs: `User: ${prompt}\nBot:`,
       parameters: {
