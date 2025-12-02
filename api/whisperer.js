@@ -16,11 +16,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid prompt' });
     }
 
-    // ✅ WORKING MODEL: Facebook BlenderBot (still available)
-    const MODEL = "facebook/blenderbot-400M-distill";
+    // ✅ USE THE NEW ROUTER ENDPOINT
+    const MODEL = "microsoft/DialoGPT-medium"; // Still works via router
     
     const response = await fetch(
-      `https://api-inference.huggingface.co/models/${MODEL}`,
+      `https://router.huggingface.co/models/${MODEL}/generate`,
       {
         method: 'POST',
         headers: {
@@ -28,11 +28,12 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          inputs: prompt,
+          inputs: `User: ${prompt}\nBot:`,
           parameters: {
             max_new_tokens: 80,
             temperature: 0.9,
-            top_p: 0.95
+            top_p: 0.95,
+            repetition_penalty: 1.2
           }
         })
       }
@@ -43,7 +44,9 @@ export default async function handler(req, res) {
       console.error("Hugging Face error:", response.status, errorText);
       
       if (response.status === 401) {
-        return res.status(500).json({ error: "Invalid token" });
+        return res.status(500).json({ 
+          error: "Invalid token. Please contact site admin." 
+        });
       }
       if (response.status === 503) {
         return res.status(503).json({ 
@@ -56,21 +59,19 @@ export default async function handler(req, res) {
     const result = await response.json();
     let text = "";
 
-    if (Array.isArray(result) && result[0]?.generated_text) {
-      text = result[0].generated_text;
-    } else if (result?.generated_text) {
+    if (result?.generated_text) {
       text = result.generated_text;
-    } else {
-      text = JSON.stringify(result); // Debug raw response
+    } else if (Array.isArray(result) && result[0]?.generated_text) {
+      text = result[0].generated_text;
     }
 
     // Clean response
     text = text
-      .replace(prompt, '') // Remove input echo
+      .replace(/User:.+?Bot:/g, '')
       .trim();
 
     if (!text || text.length < 10) {
-      text = "Penguins are amazing birds! They swim up to 22 mph and can dive over 500 meters deep.";
+      text = "Penguins are incredible birds! They can't fly but swim up to 22 mph underwater.";
     }
 
     console.log("✅ Response:", text.substring(0, 50) + "...");
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("🔥 Fatal error:", error.message);
     res.status(500).json({ 
-      error: "Penguin wisdom is temporarily unavailable. Try again soon!" 
+      error: "The penguin council is in session. Please try again shortly." 
     });
   }
 }
