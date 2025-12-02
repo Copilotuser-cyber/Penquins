@@ -1,62 +1,66 @@
 // api/whisperer.js
 import { HfInference } from '@huggingface/inference';
 
-// Get token from Vercel environment variable
 const HF_TOKEN = process.env.HUGGING_FACE_TOKEN;
-const MODEL = "google/flan-t5-large";
 
 if (!HF_TOKEN) {
-  throw new Error("HUGGING_FACE_TOKEN environment variable is not set");
+  console.error("❌ HUGGING_FACE_TOKEN not set in Vercel environment variables");
+  throw new Error("Server misconfiguration");
 }
 
 const hf = new HfInference(HF_TOKEN);
 
 export default async function handler(req, res) {
-  // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Only POST allowed' });
   }
 
   try {
     const { prompt } = req.body;
 
-    if (!prompt || typeof prompt !== 'string') {
+    if (!prompt || typeof prompt !== 'string' || prompt.length > 200) {
       return res.status(400).json({ error: 'Invalid prompt' });
     }
 
-    // Format prompt for penguin context
-    const formattedPrompt = `penguin: ${prompt}`;
-
-    // Query Hugging Face
-    const response = await hf.textGeneration({
-      model: MODEL,
-      inputs: formattedPrompt,
+    // Use a more reliable model that works out-of-the-box
+    const response = await diumhf.textGeneration({
+      model: "meta-llama/Llama-4-Scout-17B-16E-Instruct", // More stable than blenderbot
+      inputs: `User: ${prompt}\nBot:`,
       parameters: {
-        max_new_tokens: 120,
-        temperature: 0.85,
+        max_new_tokens: 80,
+        temperature: 0.9,
         top_p: 0.95,
         repetition_penalty: 1.2,
         return_full_text: false
       }
     });
 
-    // Clean response
     let text = response.generated_text || "";
+    
+    // Clean response
     text = text
-      .replace(/penguin:.+?(?=\n|$)/gi, '')
+      .split('\n')[0] // Take only first line
+      .replace(/User:.*/gi, '')
       .replace(/Bot:/gi, '')
-      .replace(/^"(.*)"$/, '$1')
       .trim();
 
-    if (!text) {
-      text = "The penguins are sharing their secrets in hushed tones...";
+    if (!text || text.length < 5) {
+      text = "Penguins are fascinating birds that can't fly but are amazing swimmers!";
     }
 
+    console.log("✅ Whisperer response:", text);
     res.status(200).json({ response: text });
+
   } catch (error) {
-    console.error("Whisperer error:", error);
+    console.error("🔥 Whisperer error:", error.message || error);
+    
+    // Log specific Hugging Face errors
+    if (error.message?.includes("Authorization")) {
+      console.error("🔑 HUGGING_FACE_TOKEN is invalid or missing!");
+    }
+    
     res.status(500).json({ 
-      error: "The penguins are sleeping right now. Try again later." 
+      error: "The penguin elders are in deep meditation. Please try again in a moment." 
     });
   }
 }
