@@ -1,28 +1,26 @@
 // api/whisperer.js
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Only POST allowed' });
   }
 
   const HF_TOKEN = process.env.HUGGING_FACE_TOKEN;
   if (!HF_TOKEN) {
-    console.error("❌ HUGGING_FACE_TOKEN is missing in Vercel environment variables");
-    return res.status(500).json({ error: "Server configuration error" });
+    console.error("❌ HUGGING_FACE_TOKEN missing in Vercel env vars");
+    return res.status(500).json({ error: "Server config error" });
   }
 
   try {
     const { prompt } = req.body;
-
-    // Validate input
     if (!prompt || typeof prompt !== 'string' || prompt.length > 200) {
       return res.status(400).json({ error: 'Invalid prompt' });
     }
 
-    // ✅ CORRECT ENDPOINT: https://api-inference.huggingface.co (still works for inference!)
-    // The "router" error is misleading - the old endpoint works for inference
+    // ✅ WORKING MODEL: Facebook BlenderBot (still available)
+    const MODEL = "facebook/blenderbot-400M-distill";
+    
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium',
+      `https://api-inference.huggingface.co/models/${MODEL}`,
       {
         method: 'POST',
         headers: {
@@ -30,67 +28,58 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          inputs: `A penguin expert answering: "${prompt}"`,
+          inputs: prompt,
           parameters: {
             max_new_tokens: 80,
-            temperature: 0.8,
-            top_p: 0.9,
-            repetition_penalty: 1.1
+            temperature: 0.9,
+            top_p: 0.95
           }
         })
       }
     );
 
-    // Handle Hugging Face errors
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Hugging Face API error:", response.status, errorText);
+      console.error("Hugging Face error:", response.status, errorText);
       
       if (response.status === 401) {
-        return res.status(500).json({ 
-          error: "Invalid Hugging Face token. Please contact the site administrator." 
-        });
+        return res.status(500).json({ error: "Invalid token" });
       }
-      
       if (response.status === 503) {
         return res.status(503).json({ 
-          error: "Penguin wisdom is loading... Please try again in 30 seconds." 
+          error: "Model loading... Wait 30 seconds and retry." 
         });
       }
-      
-      throw new Error(`API error: ${response.status}`);
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 
-    // Parse response
     const result = await response.json();
     let text = "";
 
     if (Array.isArray(result) && result[0]?.generated_text) {
       text = result[0].generated_text;
-    } else if (typeof result === 'object' && result.generated_text) {
+    } else if (result?.generated_text) {
       text = result.generated_text;
+    } else {
+      text = JSON.stringify(result); // Debug raw response
     }
 
-    // Clean and validate
+    // Clean response
     text = text
-      .replace(/A penguin expert answering:.+?"(.+?)"/, '$1') // Extract quoted answer
-      .replace(/"/g, '') // Remove quotes
+      .replace(prompt, '') // Remove input echo
       .trim();
 
     if (!text || text.length < 10) {
-      text = "Penguins are incredible birds! They can't fly but swim up to 22 mph underwater.";
+      text = "Penguins are amazing birds! They swim up to 22 mph and can dive over 500 meters deep.";
     }
 
-    // Log success
-    console.log("✅ Whisperer responded:", text.substring(0, 50) + "...");
-    
-    // Return to client
+    console.log("✅ Response:", text.substring(0, 50) + "...");
     res.status(200).json({ response: text });
 
   } catch (error) {
-    console.error("🔥 Fatal error in whisperer:", error);
+    console.error("🔥 Fatal error:", error.message);
     res.status(500).json({ 
-      error: "The penguin council is in session. Please try again shortly." 
+      error: "Penguin wisdom is temporarily unavailable. Try again soon!" 
     });
   }
 }
