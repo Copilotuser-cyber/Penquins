@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     }
 
     // ✅ USE THE NEW ROUTER ENDPOINT
-    const MODEL = "microsoft/DialoGPT-medium"; // Still works via router
+    const MODEL = "meta-llama/Llama-4-Scout-17B-16E-Instruct"; // Still works via router
     
     const response = await fetch(
       `https://router.huggingface.co/models/${MODEL}/generate`,
