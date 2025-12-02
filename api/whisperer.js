@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const hfResponse = await fetch("https://api-inference.huggingface.co/models/meta-llama/Llama-4-Scout-17B-16E-Instruct", {
+    const hfResponse = await fetch("https://router.huggingface.co/models/meta-llama/Llama-4-Scout-17B-16E-Instruct", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.HUGGING_FACE_TOKEN}`,
